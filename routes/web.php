@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\LandAreaController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CertificateController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', function () { return redirect()->route('certificates.index'); });
 
-Route::resource('land-areas', LandAreaController::class)->only(['create', 'store']);
-Route::resource('land_areas', LandAreaController::class)->only(['create', 'store']);
+Route::get('/certificates', [CertificateController::class, 'index'])->name('certificates.index');
+Route::get('/certificates/create', [CertificateController::class, 'create'])->name('certificates.create');
+Route::post('/certificates', [CertificateController::class, 'store'])->name('certificates.store');
+Route::delete('/certificates/{id}', [CertificateController::class, 'destroy'])->name('certificates.destroy');
