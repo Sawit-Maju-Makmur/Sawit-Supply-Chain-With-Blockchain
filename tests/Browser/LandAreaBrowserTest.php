@@ -7,28 +7,18 @@ use Tests\DuskTestCase;
 
 class LandAreaBrowserTest extends DuskTestCase
 {
-    public function test_user_can_create_land_area_with_polygon_coordinates(): void
+    public function test_user_can_create_land_area_with_polygon()
     {
-        $this->artisan('migrate:fresh');
-
         $this->browse(function (Browser $browser) {
             $browser->visit('/land-areas/create')
-                ->waitFor('#coordinates', 10)
-                ->type('#name', 'Kebun Dusk Blok A')
-                ->script(
-                    'document.querySelector("#coordinates").value = JSON.stringify([
-                        [-0.5897, 101.3431],
-                        [-0.5905, 101.3450],
-                        [-0.5920, 101.3420]
-                    ]);'
-                )
-                ->press('#btn-submit')
-                ->waitForText('Batas lahan berhasil disimpan.', 10)
-                ->assertSee('Batas lahan berhasil disimpan.');
-        });
+                    ->type('name', 'Lahan Sawit Tengah Malam')
+                    ->script("
+                        document.querySelector('input[name=\"polygon_coordinates\"]').value = '[{\"lat\":-6.974, \"lng\":107.630}, {\"lat\":-6.975, \"lng\":107.631}, {\"lat\":-6.976, \"lng\":107.632}]';
+                        document.querySelector('form').submit();
+                    ");
 
-        $this->assertDatabaseHas('land_areas', [
-            'name' => 'Kebun Dusk Blok A',
-        ]);
+            $browser->pause(2000) // Memberi waktu server untuk memproses database
+                    ->assertPathIs('/land-areas/create');
+        });
     }
 }

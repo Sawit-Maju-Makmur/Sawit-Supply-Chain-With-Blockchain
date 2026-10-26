@@ -45,4 +45,9 @@ abstract class DuskTestCase extends BaseTestCase
             )
         );
     }
+
+    protected function baseUrl(): string
+    {
+        return rtrim(env('APP_URL', 'http://127.0.0.1:8000'), '/');
+    }
 }
