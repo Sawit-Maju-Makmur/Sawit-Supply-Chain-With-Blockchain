@@ -27,8 +27,12 @@ return [
     | same cache driver to group types of items stored in your caches.
     |
     | Supported drivers: "array", "database", "file", "memcached",
+<<<<<<< HEAD
     |                    "redis", "dynamodb", "octane",
     |                    "failover", "null"
+=======
+    |                    "redis", "dynamodb", "octane", "null"
+>>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
     |
     */
 
@@ -91,6 +95,7 @@ return [
             'driver' => 'octane',
         ],
 
+<<<<<<< HEAD
         'failover' => [
             'driver' => 'failover',
             'stores' => [
@@ -99,6 +104,8 @@ return [
             ],
         ],
 
+=======
+>>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
     ],
 
     /*
@@ -112,6 +119,10 @@ return [
     |
     */
 
+<<<<<<< HEAD
     'prefix' => env('CACHE_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-cache-'),
+=======
+    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
+>>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
 
 ];

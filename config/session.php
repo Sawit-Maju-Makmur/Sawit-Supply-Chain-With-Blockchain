@@ -13,8 +13,13 @@ return [
     | incoming requests. Laravel supports a variety of storage options to
     | persist session data. Database storage is a great default choice.
     |
+<<<<<<< HEAD
     | Supported: "file", "cookie", "database", "memcached",
     |            "redis", "dynamodb", "array"
+=======
+    | Supported: "file", "cookie", "database", "apc",
+    |            "memcached", "redis", "dynamodb", "array"
+>>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
     |
     */
 
@@ -97,7 +102,11 @@ return [
     | define the cache store which should be used to store the session data
     | between requests. This must match one of your defined cache stores.
     |
+<<<<<<< HEAD
     | Affects: "dynamodb", "memcached", "redis"
+=======
+    | Affects: "apc", "dynamodb", "memcached", "redis"
+>>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
     |
     */
 
@@ -129,7 +138,11 @@ return [
 
     'cookie' => env(
         'SESSION_COOKIE',
+<<<<<<< HEAD
         Str::slug((string) env('APP_NAME', 'laravel')).'-session'
+=======
+        Str::slug(env('APP_NAME', 'laravel'), '_').'_session'
+>>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
     ),
 
     /*
@@ -152,7 +165,11 @@ return [
     |
     | This value determines the domain and subdomains the session cookie is
     | available to. By default, the cookie will be available to the root
+<<<<<<< HEAD
     | domain without subdomains. Typically, this shouldn't be changed.
+=======
+    | domain and all subdomains. Typically, this shouldn't be changed.
+>>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
     |
     */
 
