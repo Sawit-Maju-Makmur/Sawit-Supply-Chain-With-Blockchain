@@ -90,6 +90,10 @@ return [
             'driver' => 'octane',
         ],
 
+        'null' => [
+            'driver' => 'null',
+        ],
+
     ],
 
     /*
@@ -97,12 +101,13 @@ return [
     | Cache Key Prefix
     |--------------------------------------------------------------------------
     |
-    | When utilizing the APC, database, memcached, Redis, and DynamoDB cache
-    | stores, there might be other applications using the same cache. For
-    | that reason, you may prefix every cache key to avoid collisions.
+    | When utilizing the APC, database, memcached, Redis, or DynamoDB cache
+    | stores, there might be collisions across multiple applications. When this
+    | happens, you may specify a cache prefix. This value should be a string
+    | or array of strings, to be used as the prefix for all keys.
     |
     */
 
-    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
+    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_cache_'),
 
 ];

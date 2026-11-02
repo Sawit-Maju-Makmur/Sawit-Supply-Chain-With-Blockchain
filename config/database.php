@@ -11,8 +11,8 @@ return [
     |
     | Here you may specify which of the database connections below you wish
     | to use as your default connection for database operations. This is
-    | the connection which will be utilized unless another connection
-    | is explicitly specified when you execute a query / statement.
+    | the connection which will be utilized unless another connection is
+    | explicitly specified when you execute a query / statement.
     |
     */
 
@@ -23,9 +23,11 @@ return [
     | Database Connections
     |--------------------------------------------------------------------------
     |
-    | Below are all of the database connections defined for your application.
-    | An example configuration is provided for each database system which
-    | is supported by Laravel. You're free to add / remove connections.
+    | Here are each of the database connections setup for your application.
+    | Of course, examples of configuring each database platform are shown
+    | below to make development simple.
+    |
+    | Supported Drivers: "sqlite", "mysql", "mariadb", "pgsql", "sqlsrv"
     |
     */
 
@@ -37,9 +39,6 @@ return [
             'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-            'busy_timeout' => null,
-            'journal_mode' => null,
-            'synchronous' => null,
         ],
 
         'mysql' => [
@@ -147,8 +146,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
-            'persistent' => env('REDIS_PERSISTENT', false),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_database_'),
         ],
 
         'default' => [
