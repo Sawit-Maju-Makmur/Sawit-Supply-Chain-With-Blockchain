@@ -101,12 +101,7 @@ return [
 
     'previous_keys' => [
         ...array_filter(
-<<<<<<< HEAD
-            explode(',', (string) env('APP_PREVIOUS_KEYS', ''))
-=======
-            explode(',', env('APP_PREVIOUS_KEYS', ''))
->>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
-        ),
+            explode(',', (string) env('APP_PREVIOUS_KEYS', ''))        ),
     ],
 
     /*

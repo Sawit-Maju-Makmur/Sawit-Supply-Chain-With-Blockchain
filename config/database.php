@@ -1,10 +1,6 @@
 <?php
 
 use Illuminate\Support\Str;
-<<<<<<< HEAD
-use Pdo\Mysql;
-=======
->>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
 
 return [
 
@@ -15,8 +11,8 @@ return [
     |
     | Here you may specify which of the database connections below you wish
     | to use as your default connection for database operations. This is
-    | the connection which will be utilized unless another connection
-    | is explicitly specified when you execute a query / statement.
+    | the connection which will be utilized unless another connection is
+    | explicitly specified when you execute a query / statement.
     |
     */
 
@@ -27,9 +23,11 @@ return [
     | Database Connections
     |--------------------------------------------------------------------------
     |
-    | Below are all of the database connections defined for your application.
-    | An example configuration is provided for each database system which
-    | is supported by Laravel. You're free to add / remove connections.
+    | Here are each of the database connections setup for your application.
+    | Of course, examples of configuring each database platform are shown
+    | below to make development simple.
+    |
+    | Supported Drivers: "sqlite", "mysql", "mariadb", "pgsql", "sqlsrv"
     |
     */
 
@@ -41,13 +39,6 @@ return [
             'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-            'busy_timeout' => null,
-            'journal_mode' => null,
-            'synchronous' => null,
-<<<<<<< HEAD
-            'transaction_mode' => 'DEFERRED',
-=======
->>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
         ],
 
         'mysql' => [
@@ -66,13 +57,8 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-<<<<<<< HEAD
-                (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
-            ], fn ($value) => $value !== null) : [],
-=======
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
->>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
         ],
 
         'mariadb' => [
@@ -91,13 +77,8 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-<<<<<<< HEAD
-                (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
-            ], fn ($value) => $value !== null) : [],
-=======
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
->>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
         ],
 
         'pgsql' => [
@@ -112,11 +93,7 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-<<<<<<< HEAD
-            'sslmode' => env('DB_SSLMODE', 'prefer'),
-=======
             'sslmode' => 'prefer',
->>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
         ],
 
         'sqlsrv' => [
@@ -169,12 +146,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-<<<<<<< HEAD
-            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-database-'),
-=======
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
->>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
-            'persistent' => env('REDIS_PERSISTENT', false),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_database_'),
         ],
 
         'default' => [
@@ -184,13 +156,6 @@ return [
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_DB', '0'),
-<<<<<<< HEAD
-            'max_retries' => env('REDIS_MAX_RETRIES', 3),
-            'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
-            'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
-            'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
-=======
->>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
         ],
 
         'cache' => [
@@ -200,13 +165,6 @@ return [
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_CACHE_DB', '1'),
-<<<<<<< HEAD
-            'max_retries' => env('REDIS_MAX_RETRIES', 3),
-            'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
-            'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
-            'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
-=======
->>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
         ],
 
     ],

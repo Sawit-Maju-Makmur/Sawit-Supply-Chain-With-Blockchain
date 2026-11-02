@@ -27,12 +27,7 @@ return [
     | same cache driver to group types of items stored in your caches.
     |
     | Supported drivers: "array", "database", "file", "memcached",
-<<<<<<< HEAD
-    |                    "redis", "dynamodb", "octane",
-    |                    "failover", "null"
-=======
     |                    "redis", "dynamodb", "octane", "null"
->>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
     |
     */
 
@@ -95,17 +90,10 @@ return [
             'driver' => 'octane',
         ],
 
-<<<<<<< HEAD
-        'failover' => [
-            'driver' => 'failover',
-            'stores' => [
-                'database',
-                'array',
-            ],
+        'null' => [
+            'driver' => 'null',
         ],
 
-=======
->>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
     ],
 
     /*
@@ -113,16 +101,13 @@ return [
     | Cache Key Prefix
     |--------------------------------------------------------------------------
     |
-    | When utilizing the APC, database, memcached, Redis, and DynamoDB cache
-    | stores, there might be other applications using the same cache. For
-    | that reason, you may prefix every cache key to avoid collisions.
+    | When utilizing the APC, database, memcached, Redis, or DynamoDB cache
+    | stores, there might be collisions across multiple applications. When this
+    | happens, you may specify a cache prefix. This value should be a string
+    | or array of strings, to be used as the prefix for all keys.
     |
     */
 
-<<<<<<< HEAD
-    'prefix' => env('CACHE_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-cache-'),
-=======
-    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
->>>>>>> f017a484a6c468e69098875f0dd98e4f15c46ac3
+    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_cache_'),
 
 ];
