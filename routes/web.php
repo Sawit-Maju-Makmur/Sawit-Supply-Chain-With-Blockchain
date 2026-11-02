@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LahanController;
+use App\Http\Controllers\LandAreaController;
 
 Route::get('/', fn () => redirect()->route('login'));
 
@@ -31,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:eksportir_importir')->name('eksportir.dashboard');
 });
 
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -38,3 +41,8 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::resource('land-areas', LandAreaController::class)->only(['create', 'store']);
+Route::resource('land_areas', LandAreaController::class)->only(['create', 'store']);
+Route::resource('lahan', LahanController::class);
+
