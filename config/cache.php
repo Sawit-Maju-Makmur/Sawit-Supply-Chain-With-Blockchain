@@ -27,8 +27,7 @@ return [
     | same cache driver to group types of items stored in your caches.
     |
     | Supported drivers: "array", "database", "file", "memcached",
-    |                    "redis", "dynamodb", "storage", "octane",
-    |                    "session", "failover", "null"
+    |                    "redis", "dynamodb", "octane", "null"
     |
     */
 
@@ -50,13 +49,7 @@ return [
         'file' => [
             'driver' => 'file',
             'path' => storage_path('framework/cache/data'),
-            'lock_path' => storage_path('framework/cache/locks'),
-        ],
-
-        'storage' => [
-            'driver' => 'storage',
-            'disk' => env('CACHE_STORAGE_DISK'),
-            'path' => env('CACHE_STORAGE_PATH', 'framework/cache/data'),
+            'lock_path' => storage_path('framework/cache/data'),
         ],
 
         'memcached' => [
@@ -97,12 +90,8 @@ return [
             'driver' => 'octane',
         ],
 
-        'failover' => [
-            'driver' => 'failover',
-            'stores' => [
-                'database',
-                'array',
-            ],
+        'null' => [
+            'driver' => 'null',
         ],
 
     ],
@@ -112,25 +101,13 @@ return [
     | Cache Key Prefix
     |--------------------------------------------------------------------------
     |
-    | When utilizing the APC, database, memcached, Redis, and DynamoDB cache
-    | stores, there might be other applications using the same cache. For
-    | that reason, you may prefix every cache key to avoid collisions.
+    | When utilizing the APC, database, memcached, Redis, or DynamoDB cache
+    | stores, there might be collisions across multiple applications. When this
+    | happens, you may specify a cache prefix. This value should be a string
+    | or array of strings, to be used as the prefix for all keys.
     |
     */
 
-    'prefix' => env('CACHE_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-cache-'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Serializable Classes
-    |--------------------------------------------------------------------------
-    |
-    | This value determines the classes that can be unserialized from cache
-    | storage. By default, no PHP classes will be unserialized from your
-    | cache to prevent gadget chain attacks if your APP_KEY is leaked.
-    |
-    */
-
-    'serializable_classes' => false,
+    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_cache_'),
 
 ];
