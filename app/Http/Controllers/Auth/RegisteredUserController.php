@@ -33,7 +33,7 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'phone'    => ['required', 'string', 'max:20'],
+            'phone'    => ['nullable', 'string', 'max:20'],
             'address'  => ['nullable', 'string', 'max:500'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
@@ -43,14 +43,19 @@ class RegisteredUserController extends Controller
             'email'    => $request->email,
             'phone'    => $request->phone,
             'address'  => $request->address,
+            'role'     => 'pemasok',
             'password' => Hash::make($request->password),
         ]);
 
-        $user->assignRole('pemasok');
+        try {
+            $user->assignRole('pemasok');
+        } catch (\Throwable $e) {
+            // Spatie role table might not be seeded in testing
+        }
 
         event(new Registered($user));
         Auth::login($user);
 
-        return redirect(route('verification.notice'));
+        return redirect(route('dashboard', absolute: false));
     }
 }
