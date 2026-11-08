@@ -31,8 +31,10 @@ class RoleSeeder extends Seeder
         foreach ($akun as [$nama, $email, $role]) {
             $user = User::firstOrCreate(
                 ['email' => $email],
-                ['name' => $nama, 'password' => Hash::make('password123'), 'email_verified_at' => now()]
+                ['name' => $nama, 'role' => $role, 'password' => Hash::make('password123'), 'email_verified_at' => now()]
             );
+            $user->role = $role;
+            $user->save();
             $user->syncRoles($role);
         }
     }
