@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Spatie\Permission\Models\Role;
 
 class RegisteredUserController extends Controller
 {
@@ -33,7 +34,7 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'phone'    => ['required', 'string', 'max:20'],
+            'phone'    => ['nullable', 'string', 'max:20'],
             'address'  => ['nullable', 'string', 'max:500'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
@@ -46,11 +47,12 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        Role::firstOrCreate(['name' => 'pemasok']);
         $user->assignRole('pemasok');
 
         event(new Registered($user));
         Auth::login($user);
 
-        return redirect(route('verification.notice'));
+        return redirect(route('dashboard', absolute: false));
     }
 }
