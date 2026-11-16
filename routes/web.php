@@ -60,7 +60,6 @@ Route::middleware(['auth', 'role:pemasok'])->group(function () {
 });
 
 Route::resource('land-areas', LandAreaController::class)->only(['create', 'store']);
-Route::resource('land_areas', LandAreaController::class)->only(['create', 'store']);
 
 require __DIR__.'/auth.php';
 
