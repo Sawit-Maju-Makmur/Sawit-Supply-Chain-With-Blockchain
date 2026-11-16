@@ -40,9 +40,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
-
+Route::middleware(['auth', 'verified', 'role:pemasok'])->group(function () {
+    Route::resource('lahan', LahanController::class);
+});
 Route::resource('land-areas', LandAreaController::class)->only(['create', 'store']);
 Route::resource('land_areas', LandAreaController::class)->only(['create', 'store']);
-Route::resource('lahan', LahanController::class);
+
+require __DIR__.'/auth.php';
+
+
 
