@@ -39,6 +39,10 @@
         <label class="block mb-1" for="polygon-map">Batas Poligon Lahan</label>
         <p class="mb-2 text-sm text-gray-600">Klik peta untuk menambahkan minimal 3 titik batas. Fitur ini opsional.</p>
         <div id="polygon-map" class="rounded border"></div>
+        <div class="mt-2 flex flex-wrap items-center gap-2 text-sm">
+            <button type="button" id="use-location" class="rounded bg-green-700 text-white px-3 py-1.5">Gunakan lokasi saya</button>
+            <span id="location-status" class="text-gray-600" aria-live="polite">Lokasi belum diakses.</span>
+        </div>
         <input
             type="hidden"
             name="polygon_coordinates"
@@ -107,13 +111,80 @@
                 maxZoom: 19,
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
+            window.addEventListener('load', () => map.invalidateSize());
+            setTimeout(() => map.invalidateSize(), 0);
 
             const input = document.getElementById('polygon-coordinates');
             const status = document.getElementById('polygon-status');
+            const locationStatus = document.getElementById('location-status');
+            const latitudeInput = document.querySelector('input[name="latitude"]');
+            const longitudeInput = document.querySelector('input[name="longitude"]');
+            const useLocationButton = document.getElementById('use-location');
             const form = input.closest('form');
             const points = [];
             const markers = [];
             let polygon = null;
+            let currentLocationMarker = null;
+
+            function setLocationStatus(message, isError = false) {
+                locationStatus.textContent = message;
+                locationStatus.classList.toggle('text-red-600', isError);
+                locationStatus.classList.toggle('text-gray-600', !isError);
+            }
+
+            function applyUserLocation(latitude, longitude) {
+                const lat = Number(latitude);
+                const lng = Number(longitude);
+
+                if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+                    return;
+                }
+
+                if (latitudeInput) latitudeInput.value = lat.toFixed(6);
+                if (longitudeInput) longitudeInput.value = lng.toFixed(6);
+
+                map.setView([lat, lng], 15);
+
+                if (currentLocationMarker) {
+                    map.removeLayer(currentLocationMarker);
+                }
+
+                currentLocationMarker = L.circleMarker([lat, lng], {
+                    radius: 8,
+                    color: '#1d4ed8',
+                    fillColor: '#60a5fa',
+                    fillOpacity: 0.9,
+                    weight: 2
+                }).addTo(map);
+                currentLocationMarker.bindTooltip('Lokasi Anda');
+
+                setLocationStatus(`Lokasi Anda: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+            }
+
+            useLocationButton.addEventListener('click', () => {
+                if (!navigator.geolocation) {
+                    setLocationStatus('Browser Anda tidak mendukung akses lokasi.', true);
+                    return;
+                }
+
+                setLocationStatus('Mencari lokasi Anda...');
+                navigator.geolocation.getCurrentPosition(
+                    ({ coords }) => applyUserLocation(coords.latitude, coords.longitude),
+                    error => {
+                        const messages = {
+                            1: 'Akses lokasi ditolak. Izinkan akses lokasi di browser Anda.',
+                            2: 'Lokasi saat ini tidak tersedia.',
+                            3: 'Waktu untuk mengambil lokasi habis.'
+                        };
+                        setLocationStatus(messages[error.code] ?? 'Gagal mengambil lokasi Anda.', true);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 60000
+                    }
+                );
+            });
 
             function drawPolygon() {
                 if (polygon) {

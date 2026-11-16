@@ -11,6 +11,9 @@
             <p class="mut">
                 {{ $supplier->type_label }}
                 <span class="chip {{ $supplier->status === 'active' ? 'ok' : ($supplier->status === 'inactive' ? 'er' : 'wa') }}" dusk="supplier-status">{{ $supplier->status_label }}</span>
+                <span class="chip {{ $hasValidCertification ? 'ok' : 'er' }}" dusk="supplier-certification">
+                    {{ $hasValidCertification ? 'Sertifikasi valid' : 'Tidak layak beroperasi' }}
+                </span>
             </p>
         </div>
         <span class="pbi">PBI 9</span>

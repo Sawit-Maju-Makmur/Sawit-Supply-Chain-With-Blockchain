@@ -256,9 +256,13 @@
                             Status Titik:
                             <span id="point-badge" class="badge badge-warning">0 Titik (Belum Membentuk Poligon)</span>
                         </div>
-                        <div>
-                            <em>Panduan: Klik peta untuk membuat titik batas lahan.</em>
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <button type="button" id="use-location" class="btn-secondary" style="padding:8px 12px; font-size:0.85rem;">Gunakan lokasi saya</button>
+                            <span id="location-status" style="color: var(--text-muted); font-size:0.82rem;" aria-live="polite">Lokasi belum diakses.</span>
                         </div>
+                    </div>
+                    <div style="margin-top:8px; color: var(--text-muted); font-size:0.85rem;">
+                        <em>Panduan: Klik peta untuk membuat titik batas lahan.</em>
                     </div>
                 </div>
 
@@ -285,16 +289,83 @@
             maxZoom: 19,
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
+        window.addEventListener('load', function () {
+            map.invalidateSize();
+        });
+        setTimeout(function () {
+            map.invalidateSize();
+        }, 0);
 
         const coordinatesInput = document.getElementById('coordinates');
         const pointBadge = document.getElementById('point-badge');
         const btnUndo = document.getElementById('btn-undo');
         const btnReset = document.getElementById('btn-reset');
+        const useLocationButton = document.getElementById('use-location');
+        const locationStatus = document.getElementById('location-status');
         const form = document.getElementById('land-area-form');
 
         let points = [];
         const markers = [];
         let polygon = null;
+        let currentLocationMarker = null;
+
+        function setLocationStatus(message, isError = false) {
+            locationStatus.textContent = message;
+            locationStatus.style.color = isError ? '#991b1b' : 'var(--text-muted)';
+        }
+
+        function applyUserLocation(latitude, longitude) {
+            const lat = Number(latitude);
+            const lng = Number(longitude);
+
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+                return;
+            }
+
+            map.setView([lat, lng], 15);
+
+            if (currentLocationMarker) {
+                map.removeLayer(currentLocationMarker);
+            }
+
+            currentLocationMarker = L.circleMarker([lat, lng], {
+                radius: 8,
+                color: '#1d4ed8',
+                fillColor: '#60a5fa',
+                fillOpacity: 0.9,
+                weight: 2
+            }).addTo(map);
+            currentLocationMarker.bindTooltip('Lokasi Anda');
+
+            setLocationStatus(`Lokasi Anda: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+        }
+
+        useLocationButton.addEventListener('click', function () {
+            if (!navigator.geolocation) {
+                setLocationStatus('Browser Anda tidak mendukung akses lokasi.', true);
+                return;
+            }
+
+            setLocationStatus('Mencari lokasi Anda...');
+            navigator.geolocation.getCurrentPosition(
+                function ({ coords }) {
+                    applyUserLocation(coords.latitude, coords.longitude);
+                },
+                function (error) {
+                    const messages = {
+                        1: 'Akses lokasi ditolak. Izinkan akses lokasi di browser Anda.',
+                        2: 'Lokasi saat ini tidak tersedia.',
+                        3: 'Waktu untuk mengambil lokasi habis.'
+                    };
+                    setLocationStatus(messages[error.code] ?? 'Gagal mengambil lokasi Anda.', true);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                }
+            );
+        });
 
         // Muat titik sebelumnya jika ada (misal setelah validasi gagal)
         try {

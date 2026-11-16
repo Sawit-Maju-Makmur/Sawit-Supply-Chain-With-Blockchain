@@ -49,6 +49,7 @@ class SupplierController extends Controller
     public function show(Request $request, Supplier $supplier)
     {
         $supplier->load(['plots', 'statusLogs.actor']);
+        $hasValidCertification = $supplier->hasValidCertification();
 
         $documentSummary = Document::query()
             ->whereIn('plot_id', $supplier->plots()->select('plots.id'))
@@ -60,6 +61,7 @@ class SupplierController extends Controller
             'supplier' => $supplier,
             'documentSummary' => $documentSummary,
             'canManage' => $this->canManage($request),
+            'hasValidCertification' => $hasValidCertification,
         ]);
     }
 
@@ -70,6 +72,10 @@ class SupplierController extends Controller
 
         if ($supplier->status === $new) {
             return back()->with('error', 'Pemasok sudah berstatus '.strtolower(Supplier::STATUSES[$new]).'.');
+        }
+
+        if ($new === Supplier::STATUS_ACTIVE && ! $supplier->hasValidCertification()) {
+            return back()->with('error', 'Pemasok belum dapat diaktifkan karena semua dokumen legalitas harus disetujui dan belum kedaluwarsa.');
         }
 
         $reason = $request->validated('reason');

@@ -68,13 +68,47 @@ class Supplier extends Model
         return $q->where('status', self::STATUS_ACTIVE);
     }
 
+    public function scopeOperable(Builder $query): Builder
+    {
+        return $query
+            ->where('status', self::STATUS_ACTIVE)
+            ->whereHas('plots.documents', function (Builder $documents) {
+                $documents->where('status', 'approved')
+                    ->whereNotNull('file_path')
+                    ->where(function (Builder $expiry) {
+                        $expiry->whereNull('expires_at')
+                            ->orWhereDate('expires_at', '>=', today());
+                    });
+            })
+            ->whereDoesntHave('plots.documents', function (Builder $documents) {
+                $documents->where(function (Builder $invalid) {
+                    $invalid->where('status', '!=', 'approved')
+                        ->orWhereNull('file_path')
+                        ->orWhereDate('expires_at', '<', today());
+                });
+            });
+    }
+
     /**
      * Dipakai PBI lain (AC5): pemasok nonaktif tidak boleh membuat transaksi baru, misalnya
      * di PBI 12: abort_unless($supplier->isActive(), 403, 'Pemasok nonaktif.');
      */
     public function isActive(): bool
     {
-        return $this->status === self::STATUS_ACTIVE;
+        return $this->status === self::STATUS_ACTIVE && $this->hasValidCertification();
+    }
+
+    public function hasValidCertification(): bool
+    {
+        $documents = Document::query()
+            ->whereHas('plot', fn (Builder $plots) => $plots->where('supplier_id', $this->getKey()));
+
+        return $documents->exists()
+            && ! $documents->where(function (Builder $invalid) {
+                $invalid->where('status', '!=', 'approved')
+                    ->orWhereNull('file_path')
+                    ->orWhereDate('expires_at', '<', today());
+            })->exists();
     }
 
     public function getTypeLabelAttribute(): string

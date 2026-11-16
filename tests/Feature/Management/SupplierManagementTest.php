@@ -76,7 +76,11 @@ class SupplierManagementTest extends TestCase
     {
         $s = Supplier::factory()->create();
         $plot = Plot::create(['supplier_id' => $s->id, 'name' => 'Lahan Blok A', 'area_ha' => 4.2]);
-        Document::create(['plot_id' => $plot->id, 'status' => 'approved']);
+        Document::create([
+            'plot_id' => $plot->id,
+            'status' => 'approved',
+            'file_path' => 'certificate.pdf',
+        ]);
         Document::create(['plot_id' => $plot->id, 'status' => 'approved']);
         Document::create(['plot_id' => $plot->id, 'status' => 'rejected']);
 
@@ -123,6 +127,12 @@ class SupplierManagementTest extends TestCase
     public function test_mengaktifkan_kembali_tanpa_alasan_berhasil(): void
     {
         $s = Supplier::factory()->inactive()->create();
+        $plot = Plot::create(['supplier_id' => $s->id, 'name' => 'Lahan Bersertifikat', 'area_ha' => 2]);
+        Document::create([
+            'plot_id' => $plot->id,
+            'status' => 'approved',
+            'file_path' => 'certificate.pdf',
+        ]);
 
         $this->actingAs($this->userWithRole('management'))
             ->patch(route('management.suppliers.status', $s), ['status' => 'active'])

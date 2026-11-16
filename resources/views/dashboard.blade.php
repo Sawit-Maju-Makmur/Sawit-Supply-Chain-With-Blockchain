@@ -1,17 +1,21 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
-    </x-slot>
+<x-app-layout title="Dashboard">
+    @php
+        $user = auth()->user();
+    @endphp
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    {{ __("You're logged in!") }}
-                </div>
-            </div>
+    <div class="dashboard-header">
+        <div>
+            <p class="eyebrow">Portal Utama</p>
+            <h1 class="dashboard-title">Dashboard</h1>
         </div>
+        <span class="status-badge">Online</span>
     </div>
+
+    <section class="action-card">
+        <h2 class="card-title">Selamat datang, {{ $user->name }}</h2>
+        <p style="margin:0 0 1rem; color:#475c53; line-height:1.7;">
+            Dashboard Anda diarahkan ke ruang kerja sesuai peran. Jika tidak diarahkan otomatis, buka profil untuk memeriksa informasi akun dan akses.
+        </p>
+        <a href="{{ route('profile.edit') }}" class="pill-link">Kelola profil</a>
+    </section>
 </x-app-layout>

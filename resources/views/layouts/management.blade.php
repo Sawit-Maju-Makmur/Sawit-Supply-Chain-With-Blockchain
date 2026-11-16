@@ -56,6 +56,10 @@
     <nav>
         <a href="{{ route('dashboard') }}">Dashboard</a>
         <a href="{{ route('management.suppliers.index') }}" class="active">Data pemasok</a>
+        @if ($r === 'sustainability_officer')
+            <a href="{{ route('officer.documents.index') }}">Review dokumen</a>
+            <a href="{{ route('officer.criteria.index') }}">Kriteria asesmen</a>
+        @endif
     </nav>
     <span>{{ $u->name }} <small>({{ str_replace('_', ' ', $r) }})</small></span>
     @if (Route::has('logout'))
