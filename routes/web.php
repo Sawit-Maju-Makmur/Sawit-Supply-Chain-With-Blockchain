@@ -5,6 +5,7 @@ use App\Http\Controllers\LandAreaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Supplier\SupplierDocumentController;
+use App\Http\Controllers\Supplier\SupplierProfileController;
 use App\Http\Middleware\EnsureUserHasRole;
 use Illuminate\Support\Facades\Route;
 
@@ -44,6 +45,8 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'role:pemasok'])->group(function () {
+    Route::get('/pemasok/profil-usaha', [SupplierProfileController::class, 'edit'])->name('pemasok.profile.edit');
+    Route::put('/pemasok/profil-usaha', [SupplierProfileController::class, 'update'])->name('pemasok.profile.update');
     Route::resource('lahan', LahanController::class);
     Route::get('/pemasok/documents', [SupplierDocumentController::class, 'index'])->name('pemasok.documents.index');
     Route::post('/pemasok/documents/{lahan}', [SupplierDocumentController::class, 'store'])->name('pemasok.documents.store');
