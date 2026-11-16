@@ -13,9 +13,9 @@
 
     <div class="stats-grid">
         <article class="stat-card">
-            <p class="stat-label">Plot pemasok</p>
+            <p class="stat-label">Lahan pemasok</p>
             <p class="stat-value">{{ $plotCount }}</p>
-            <div class="stat-meta">Plot yang terhubung ke akun Anda</div>
+            <div class="stat-meta">Lahan terdaftar di akun Anda</div>
         </article>
         <article class="stat-card">
             <p class="stat-label">Peta lahan</p>
@@ -25,7 +25,7 @@
         <article class="stat-card">
             <p class="stat-label">Dokumen</p>
             <p class="stat-value">{{ $documentCount }}</p>
-            <div class="stat-meta">Dokumen pada plot pemasok Anda</div>
+            <div class="stat-meta">Dokumen pada lahan pemasok Anda</div>
         </article>
         <article class="stat-card">
             <p class="stat-label">Menunggu review</p>
@@ -40,17 +40,17 @@
             <div class="action-list">
                 <div class="action-item">
                     <div>
-                        <span class="action-name">Kelola lahan</span>
-                        <span class="action-sub">Tambah dan perbarui data kebun</span>
+                        <span class="action-name">Profil Usaha</span>
+                        <span class="action-sub">Kelola identitas usaha, NIK, NPWP, dan NIB</span>
                     </div>
-                    <a href="{{ route('lahan.index') }}" class="pill-link">Buka</a>
+                    <a href="{{ route('pemasok.profile.edit') }}" class="pill-link">Buka</a>
                 </div>
                 <div class="action-item">
                     <div>
-                        <span class="action-name">Peta batas lahan</span>
-                        <span class="action-sub">Simpan poligon lahan pada akun Anda</span>
+                        <span class="action-name">Kelola lahan</span>
+                        <span class="action-sub">Tambah dan perbarui data kebun serta peta</span>
                     </div>
-                    <a href="{{ route('land-areas.create') }}" class="pill-link">Buka</a>
+                    <a href="{{ route('lahan.index') }}" class="pill-link">Buka</a>
                 </div>
                 <div class="action-item">
                     <div>
@@ -58,6 +58,20 @@
                         <span class="action-sub">Unggah sertifikasi dan pantau hasil pemeriksaan</span>
                     </div>
                     <a href="{{ route('pemasok.documents.index') }}" class="pill-link">Buka</a>
+                </div>
+                <div class="action-item">
+                    <div>
+                        <span class="action-name">Self-Assessment</span>
+                        <span class="action-sub">Evaluasi mandiri sustainability & ketertelusuran</span>
+                    </div>
+                    <a href="{{ route('assessments.index') }}" class="pill-link">Buka</a>
+                </div>
+                <div class="action-item">
+                    <div>
+                        <span class="action-name">Peta batas lahan</span>
+                        <span class="action-sub">Simpan poligon lahan pada akun Anda</span>
+                    </div>
+                    <a href="{{ route('land-areas.create') }}" class="pill-link">Buka</a>
                 </div>
                 <div class="action-item">
                     <div>
@@ -82,9 +96,9 @@
 
     <div class="grid-panels" style="margin-top: 1.25rem;">
         <section class="action-card">
-            <h2 class="card-title">Plot terbaru</h2>
+            <h2 class="card-title">Lahan terbaru</h2>
             @if ($recentPlots->isEmpty())
-                <p style="margin:0; color:#475c53;">Belum ada plot yang terhubung ke akun Anda.</p>
+                <p style="margin:0; color:#475c53;">Belum ada lahan yang terhubung ke akun Anda.</p>
             @else
                 <div class="action-list">
                     @foreach ($recentPlots as $plot)
@@ -123,7 +137,7 @@
     <section class="action-card" style="margin-top: 1.25rem;">
         <h2 class="card-title">Dokumen terbaru</h2>
         @if ($recentDocuments->isEmpty())
-            <p style="margin:0; color:#475c53;">Belum ada dokumen pada plot yang terhubung ke akun Anda.</p>
+            <p style="margin:0; color:#475c53;">Belum ada dokumen pada lahan yang terhubung ke akun Anda.</p>
         @else
             <div class="action-list">
                 @foreach ($recentDocuments as $document)

@@ -25,6 +25,7 @@
             <dl>
                 <dt>NIK</dt><dd>{{ $supplier->nik ?? '-' }}</dd>
                 <dt>NPWP</dt><dd>{{ $supplier->npwp ?? '-' }}</dd>
+                <dt>NIB</dt><dd>{{ $supplier->nib ?? '-' }}</dd>
                 <dt>Alamat</dt><dd>{{ $supplier->address ?? '-' }}</dd>
                 <dt>Kabupaten</dt><dd>{{ $supplier->regency ?? '-' }}</dd>
                 <dt>Telepon</dt><dd>{{ $supplier->phone ?? '-' }}</dd>
@@ -75,6 +76,32 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <div class="card" style="margin-top: 1rem;">
+        <h3>Evaluasi Keberlanjutan Mandiri (Self-Assessment)</h3>
+        @if ($supplier->latestSelfAssessment)
+            @php $assessment = $supplier->latestSelfAssessment; $info = $assessment->level_info; @endphp
+            <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+                <div>
+                    <span class="chip {{ $assessment->level === 'Tinggi' ? 'ok' : ($assessment->level === 'Sedang' ? 'wa' : 'er') }}" style="font-size: 0.95rem; font-weight: 700; padding: 4px 12px;" dusk="assessment-level">
+                        Level: {{ $assessment->level }}
+                    </span>
+                </div>
+                <div>
+                    <strong>{{ rtrim(rtrim(number_format($assessment->percentage, 2), '0'), '.') }}%</strong>
+                    <span class="mut">({{ $assessment->total_score }}/{{ $assessment->max_score }} poin)</span>
+                </div>
+                <div class="mut">
+                    Diisi: {{ $assessment->created_at->translatedFormat('d F Y, H:i') }} (Kebun: {{ $assessment->nama_kebun }})
+                </div>
+            </div>
+            @if ($assessment->catatan)
+                <p class="mut" style="margin-top: 0.5rem;">Catatan: {{ $assessment->catatan }}</p>
+            @endif
+        @else
+            <p class="mut" dusk="assessment-empty">Pemasok belum pernah mengisi formulir self-assessment keberlanjutan.</p>
+        @endif
     </div>
 
     <div class="grid2">

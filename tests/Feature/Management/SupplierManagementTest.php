@@ -192,5 +192,31 @@ class SupplierManagementTest extends TestCase
         $this->assertStringContainsString('Koperasi Tani Makmur', $csv);
         $this->assertStringNotContainsString('PT Sawit Lestari', $csv);
     }
+
+    public function test_detail_menampilkan_self_assessment_dan_nib(): void
+    {
+        $s = Supplier::factory()->create([
+            'nib' => '1234567890123',
+        ]);
+        \App\Models\SelfAssessment::create([
+            'supplier_id' => $s->id,
+            'nama_petani' => 'Pak Budi',
+            'nama_kebun' => 'Kebun Maju',
+            'lokasi' => 'Riau',
+            'luas_lahan' => 3.5,
+            'answers' => ['tanpa_bakar' => 'ya'],
+            'total_score' => 30,
+            'max_score' => 30,
+            'percentage' => 100.0,
+            'level' => 'Tinggi',
+        ]);
+
+        $this->actingAs($this->userWithRole('management'))
+            ->get(route('management.suppliers.show', $s))
+            ->assertOk()
+            ->assertSee('1234567890123')
+            ->assertSee('Tinggi')
+            ->assertSee('100%');
+    }
 }
 
