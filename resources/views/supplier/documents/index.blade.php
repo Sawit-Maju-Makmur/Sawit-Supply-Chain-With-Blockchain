@@ -23,15 +23,15 @@
                 </div>
             @endif
 
-            @php $plotList = $lahans ?? $plots ?? []; @endphp
-            @forelse ($plotList as $plot)
+            @php $lahanList = $lahans ?? $plots ?? []; @endphp
+            @forelse ($lahanList as $lahan)
                 <section class="mt-6 rounded-2xl border border-slate-200 p-5">
-                    <h2 class="text-lg font-semibold">{{ $plot->nama_kebun ?? $plot->name }}</h2>
-                    <p class="text-sm text-slate-600">{{ $plot->lokasi ?? $plot->regency ?? 'Lokasi belum diisi' }}</p>
+                    <h2 class="text-lg font-semibold">{{ $lahan->nama_kebun ?? $lahan->name }}</h2>
+                    <p class="text-sm text-slate-600">{{ $lahan->lokasi ?? $lahan->regency ?? 'Lokasi belum diisi' }}</p>
 
-                    @if ($plot->documents->isNotEmpty())
+                    @if ($lahan->documents->isNotEmpty())
                         <div class="mt-4 space-y-3">
-                            @foreach ($plot->documents as $document)
+                            @foreach ($lahan->documents as $document)
                                 <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 p-3">
                                     <div>
                                         <p class="font-medium">{{ $document->type }}</p>
@@ -51,7 +51,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('pemasok.documents.store', $plot) }}" enctype="multipart/form-data" class="mt-5 grid gap-4 md:grid-cols-2">
+                    <form method="POST" action="{{ route('pemasok.documents.store', $lahan) }}" enctype="multipart/form-data" class="mt-5 grid gap-4 md:grid-cols-2">
                         @csrf
                         <label class="text-sm font-medium">
                             Jenis dokumen
