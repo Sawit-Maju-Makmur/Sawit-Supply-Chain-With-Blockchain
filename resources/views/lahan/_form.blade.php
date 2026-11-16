@@ -15,17 +15,13 @@
 @endif
 
 <div class="grid md:grid-cols-2 gap-4">
-    <div>
-        <label class="block mb-1">Nama Pemasok / Petani *</label>
-        <input type="text" name="nama_pemasok" value="{{ $v('nama_pemasok') }}" class="w-full border rounded p-2">
-    </div>
-    <div>
-        <label class="block mb-1">Nama Kebun *</label>
-        <input type="text" name="nama_kebun" value="{{ $v('nama_kebun') }}" class="w-full border rounded p-2">
+    <div class="md:col-span-2">
+        <label class="block mb-1 font-medium">Nama Kebun *</label>
+        <input type="text" name="nama_kebun" value="{{ $v('nama_kebun') }}" placeholder="Contoh: Kebun Blok A" class="w-full border rounded p-2" required>
     </div>
     <div class="md:col-span-2">
-        <label class="block mb-1">Lokasi (desa, kecamatan, kabupaten) *</label>
-        <input type="text" name="lokasi" value="{{ $v('lokasi') }}" class="w-full border rounded p-2">
+        <label class="block mb-1 font-medium">Lokasi (desa, kecamatan, kabupaten) *</label>
+        <input type="text" name="lokasi" value="{{ $v('lokasi') }}" placeholder="Contoh: Desa Makmur, Kec. Siak, Kab. Siak" class="w-full border rounded p-2" required>
     </div>
     <div>
         <label class="block mb-1">Latitude</label>

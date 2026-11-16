@@ -10,7 +10,6 @@
     <table class="w-full text-sm text-left">
         <thead class="bg-gray-50 text-gray-600">
             <tr>
-                <th class="p-3">Pemasok</th>
                 <th class="p-3">Kebun</th>
                 <th class="p-3">Lokasi</th>
                 <th class="p-3">Koordinat</th>
@@ -22,14 +21,13 @@
         <tbody>
         @forelse ($lahans as $l)
             <tr class="border-t">
-                <td class="p-3">{{ $l->nama_pemasok }}</td>
-                <td class="p-3">{{ $l->nama_kebun }}</td>
+                <td class="p-3 font-medium">{{ $l->nama_kebun }}</td>
                 <td class="p-3">{{ $l->lokasi }}</td>
                 <td class="p-3">
                     @if ($l->latitude && $l->longitude)
                         <a class="text-blue-600 underline" target="_blank"
                            href="https://www.google.com/maps?q={{ $l->latitude }},{{ $l->longitude }}">
-                           {{ $l->latitude }}, {{ $l->longitude }}
+                            {{ $l->latitude }}, {{ $l->longitude }}
                         </a>
                     @else
                         -
@@ -47,7 +45,7 @@
                 </td>
             </tr>
         @empty
-            <tr><td colspan="7" class="p-6 text-center text-gray-500">Belum ada data lahan.</td></tr>
+            <tr><td colspan="6" class="p-6 text-center text-gray-500">Belum ada data lahan.</td></tr>
         @endforelse
         </tbody>
     </table>
