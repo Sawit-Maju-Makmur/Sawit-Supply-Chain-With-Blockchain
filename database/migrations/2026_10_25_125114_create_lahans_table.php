@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('lahans', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('nama_pemasok');
             $table->string('nama_kebun');
             $table->string('lokasi');

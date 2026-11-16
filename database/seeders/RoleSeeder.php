@@ -17,8 +17,8 @@ class RoleSeeder extends Seeder
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        foreach (['sustainability_officer', 'pemasok', 'management', 'eksportir_importir'] as $role) {
-            Role::firstOrCreate(['name' => $role]);
+        foreach (['sustainability_officer', 'officer', 'pemasok', 'management', 'eksportir_importir', 'eksportir'] as $role) {
+            Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
         }
 
         $akun = [

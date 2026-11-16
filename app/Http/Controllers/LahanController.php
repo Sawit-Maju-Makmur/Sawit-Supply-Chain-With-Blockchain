@@ -20,7 +20,11 @@ class LahanController extends Controller
 
     public function store(LahanRequest $request)
     {
-        Lahan::create($this->validatedAttributes($request));
+        $attributes = $this->validatedAttributes($request);
+        if (auth()->check()) {
+            $attributes['user_id'] = auth()->id();
+        }
+        Lahan::create($attributes);
         return redirect()->route('lahan.index')->with('success', 'Data lahan berhasil disimpan.');
     }
 
@@ -50,13 +54,13 @@ class LahanController extends Controller
     {
         $attributes = $request->validated();
 
-        if (isset($attributes['polygon_coordinates'])) {
+        if (! empty($attributes['polygon_coordinates']) && is_string($attributes['polygon_coordinates'])) {
             $attributes['polygon_coordinates'] = json_decode(
                 $attributes['polygon_coordinates'],
-                true,
-                512,
-                JSON_THROW_ON_ERROR
+                true
             );
+        } elseif (empty($attributes['polygon_coordinates'])) {
+            $attributes['polygon_coordinates'] = null;
         }
 
         return $attributes;

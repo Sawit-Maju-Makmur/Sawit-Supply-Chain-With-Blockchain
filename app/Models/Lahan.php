@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Lahan extends Model
 {
@@ -16,7 +17,7 @@ class Lahan extends Model
     ];
 
     protected $fillable = [
-        'nama_pemasok', 'nama_kebun', 'lokasi', 'latitude', 'longitude',
+        'user_id', 'nama_pemasok', 'nama_kebun', 'lokasi', 'latitude', 'longitude',
         'luas_ha', 'status_lahan', 'no_dokumen', 'keterangan', 'polygon_coordinates',
     ];
 
@@ -25,5 +26,10 @@ class Lahan extends Model
         return [
             'polygon_coordinates' => 'array',
         ];
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

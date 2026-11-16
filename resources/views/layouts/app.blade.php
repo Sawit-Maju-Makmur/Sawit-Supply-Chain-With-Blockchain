@@ -1,57 +1,59 @@
 <!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Self-Assessment') - Sawit Maju Makmur</title>
-    <link rel="stylesheet" href="{{ asset('css/sawit.css') }}">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Pastikan reset tailwind tidak merusak navbar bawaan sawit */
-        .navbar .brand span { opacity: .8; font-weight: 400; font-size: .85rem; margin-left: 6px; }
-        .navbar a.link { color: #fff; text-decoration: none; margin-left: 18px; opacity: .9; }
-        .navbar a.link:hover { opacity: 1; text-decoration: underline; }
-    </style>
-</head>
-<body>
-    <nav class="navbar">
-        <div class="inner">
-            <a href="{{ route('assessments.index') }}" class="brand">
-                🌴 Sawit Maju Makmur <span>Supply Chain</span>
-            </a>
-            <div style="display:flex; align-items:center; gap:12px;">
-                <a class="link" href="{{ route('assessments.index') }}">Self-Assessment</a>
-                @auth
-                    @if (auth()->user()->role === 'management' || (method_exists(auth()->user(), 'hasRole') && auth()->user()->hasRole('management')))
-                        <a class="link" href="{{ route('management.suppliers.index') }}" style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 6px; font-weight: 600;">Data Pemasok (PBI 9)</a>
-                    @endif
-                    <a class="link" href="{{ route('dashboard') }}">Dashboard</a>
-                    <form method="POST" action="{{ route('logout') }}" style="display:inline; margin:0;">
-                        @csrf
-                        <button type="submit" class="link" style="background:none; border:none; cursor:pointer; color:#fff; font:inherit; margin-left:14px; opacity:0.85;">Keluar</button>
-                    </form>
-                @else
-                    <a class="link" href="{{ route('login') }}" style="background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 6px; font-weight: 600;">Login</a>
-                @endauth
-            </div>
+        <title>@yield('title', config('app.name', 'Sawit Maju Makmur'))</title>
+
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+        <!-- Scripts & Styles -->
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @if (file_exists(public_path('css/sawit.css')))
+            <link rel="stylesheet" href="{{ asset('css/sawit.css') }}">
+        @endif
+        @stack('styles')
+    </head>
+    <body class="font-sans antialiased bg-gray-100 text-gray-800 min-h-screen flex flex-col">
+        @include('layouts.navigation')
+
+        <!-- Page Heading -->
+        @isset($header)
+            <header class="bg-white shadow">
+                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    {{ $header }}
+                </div>
+            </header>
+        @endisset
+
+        <!-- Flash Messages -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 w-full">
+            @if (session('success'))
+                <div class="p-4 mb-3 text-sm text-green-800 rounded-lg bg-green-50 border border-green-200" role="alert">
+                    {{ session('success') }}
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="p-4 mb-3 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200" role="alert">
+                    {{ session('error') }}
+                </div>
+            @endif
         </div>
 
-    </nav>
-    <main class="max-w-5xl mx-auto p-6">
-        @if (session('success'))
-            <div class="mb-4 p-3 rounded bg-green-100 text-green-800">{{ session('success') }}</div>
-        @endif
-        @yield('content')
-        {{ $slot ?? '' }}
-    </main>
+        <!-- Page Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+            @yield('content')
+            {{ $slot ?? '' }}
+        </main>
 
-    @stack('scripts')
+        <footer class="text-center py-6 text-xs text-gray-500 border-t border-gray-200 bg-white">
+            &copy; {{ date('Y') }} Sawit Maju Makmur &mdash; Supply Chain Traceability Platform
+        </footer>
 
-
-    <footer style="text-align:center; padding: 20px; color: #5f7566; font-size: 0.85rem;">
-        &copy; {{ date('Y') }} Sawit Maju Makmur · SCRUM-25
-    </footer>
-
-</body>
+        @stack('scripts')
+    </body>
 </html>

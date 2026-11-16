@@ -22,8 +22,13 @@ class SupplierController extends Controller
 
     private function canManage(Request $request): bool
     {
-        return EnsureUserHasRole::roleOf($request->user()) === 'management'
-            || (method_exists($request->user(), 'hasRole') && $request->user()->hasRole('management'));
+        $user = $request->user();
+        if (! $user) {
+            return false;
+        }
+
+        return EnsureUserHasRole::roleOf($user) === 'management'
+            || (method_exists($user, 'hasRole') && $user->hasRole('management'));
     }
 
     // AC1 dan AC2: daftar pemasok dengan pencarian, filter, dan pagination

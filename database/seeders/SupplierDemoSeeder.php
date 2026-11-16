@@ -12,6 +12,10 @@ class SupplierDemoSeeder extends Seeder
 {
     public function run(): void
     {
+        if (Supplier::where('name', 'Koperasi Tani Makmur')->exists()) {
+            return;
+        }
+
         $suppliers = collect([
             ['Koperasi Tani Makmur', 'mandiri', 'Kampar'],
             ['PT Sawit Lestari', 'perusahaan', 'Siak'],
@@ -42,4 +46,3 @@ class SupplierDemoSeeder extends Seeder
         }
     }
 }
-
