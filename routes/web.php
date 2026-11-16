@@ -4,6 +4,7 @@ use App\Http\Controllers\LahanController;
 use App\Http\Controllers\LandAreaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SelfAssessmentController;
 use App\Http\Controllers\Supplier\SupplierDocumentController;
 use App\Http\Controllers\Supplier\SupplierProfileController;
 use App\Http\Middleware\EnsureUserHasRole;
@@ -51,6 +52,11 @@ Route::middleware(['auth', 'role:pemasok'])->group(function () {
     Route::get('/pemasok/documents', [SupplierDocumentController::class, 'index'])->name('pemasok.documents.index');
     Route::post('/pemasok/documents/{lahan}', [SupplierDocumentController::class, 'store'])->name('pemasok.documents.store');
     Route::get('/pemasok/documents/{document}/file', [SupplierDocumentController::class, 'download'])->name('pemasok.documents.download');
+    Route::get('/pemasok/self-assessment', [SelfAssessmentController::class, 'index'])->name('assessments.index');
+    Route::get('/pemasok/self-assessment/create', [SelfAssessmentController::class, 'create'])->name('assessments.create');
+    Route::post('/pemasok/self-assessment', [SelfAssessmentController::class, 'store'])->name('assessments.store');
+    Route::get('/pemasok/self-assessment/{assessment}', [SelfAssessmentController::class, 'show'])->name('assessments.show');
+    Route::delete('/pemasok/self-assessment/{assessment}', [SelfAssessmentController::class, 'destroy'])->name('assessments.destroy');
 });
 
 Route::resource('land-areas', LandAreaController::class)->only(['create', 'store']);
