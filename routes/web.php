@@ -8,7 +8,9 @@ use App\Http\Controllers\Supplier\SupplierDocumentController;
 use App\Http\Middleware\EnsureUserHasRole;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => redirect()->route('login'));
+Route::get('/', function () {
+    return view('welcome');
+});
 
 Route::get('/dashboard', function () {
     $user = auth()->user();
