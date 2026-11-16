@@ -11,6 +11,9 @@
             <p class="mut">
                 {{ $supplier->type_label }}
                 <span class="chip {{ $supplier->status === 'active' ? 'ok' : ($supplier->status === 'inactive' ? 'er' : 'wa') }}" dusk="supplier-status">{{ $supplier->status_label }}</span>
+                <span class="chip {{ $hasValidCertification ? 'ok' : 'er' }}" dusk="supplier-certification">
+                    {{ $hasValidCertification ? 'Sertifikasi valid' : 'Tidak layak beroperasi' }}
+                </span>
             </p>
         </div>
         <span class="pbi">PBI 9</span>
@@ -22,6 +25,7 @@
             <dl>
                 <dt>NIK</dt><dd>{{ $supplier->nik ?? '-' }}</dd>
                 <dt>NPWP</dt><dd>{{ $supplier->npwp ?? '-' }}</dd>
+                <dt>NIB</dt><dd>{{ $supplier->nib ?? '-' }}</dd>
                 <dt>Alamat</dt><dd>{{ $supplier->address ?? '-' }}</dd>
                 <dt>Kabupaten</dt><dd>{{ $supplier->regency ?? '-' }}</dd>
                 <dt>Telepon</dt><dd>{{ $supplier->phone ?? '-' }}</dd>
@@ -43,19 +47,28 @@
         </div>
     </div>
 
+    @php
+        $lahanItems = $supplier->lahans->isNotEmpty() ? $supplier->lahans : $supplier->plots;
+    @endphp
     <div class="card">
-        <h3>Lahan ({{ $supplier->plots->count() }})</h3>
+        <h3>Lahan ({{ $lahanItems->count() }})</h3>
         <div class="tw">
             <table>
-                <thead><tr><th>Nama lahan</th><th>Kabupaten</th><th>Luas (ha)</th><th>Kepemilikan</th><th>Tahun tanam</th></tr></thead>
+                <thead><tr><th>Nama kebun / lahan</th><th>Lokasi / Kabupaten</th><th>Luas (ha)</th><th>Status lahan</th><th>Batas poligon</th></tr></thead>
                 <tbody>
-                @forelse ($supplier->plots as $p)
+                @forelse ($lahanItems as $p)
                     <tr>
-                        <td>{{ $p->name }}</td>
-                        <td>{{ $p->regency ?? '-' }}</td>
-                        <td>{{ $p->area_ha }}</td>
-                        <td>{{ \App\Models\Plot::OWNERSHIP[$p->ownership_status] ?? $p->ownership_status }}</td>
-                        <td>{{ $p->planting_year ?? '-' }}</td>
+                        <td>{{ $p->nama_kebun ?? $p->name }}</td>
+                        <td>{{ $p->lokasi ?? $p->regency ?? '-' }}</td>
+                        <td>{{ $p->luas_ha ?? $p->area_ha }}</td>
+                        <td>{{ \App\Models\Lahan::STATUS[$p->status_lahan ?? ''] ?? \App\Models\Plot::OWNERSHIP[$p->ownership_status ?? ''] ?? ($p->status_lahan ?? $p->ownership_status ?? '-') }}</td>
+                        <td>
+                            @if (! empty($p->polygon_coordinates) && count($p->polygon_coordinates) >= 3)
+                                <span class="chip ok">Ada ({{ count($p->polygon_coordinates) }} titik)</span>
+                            @else
+                                <span class="mut">Tidak ada</span>
+                            @endif
+                        </td>
                     </tr>
                 @empty
                     <tr><td colspan="5" class="mut">Belum ada lahan terdaftar.</td></tr>
@@ -63,6 +76,32 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <div class="card" style="margin-top: 1rem;">
+        <h3>Evaluasi Keberlanjutan Mandiri (Self-Assessment)</h3>
+        @if ($supplier->latestSelfAssessment)
+            @php $assessment = $supplier->latestSelfAssessment; $info = $assessment->level_info; @endphp
+            <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+                <div>
+                    <span class="chip {{ $assessment->level === 'Tinggi' ? 'ok' : ($assessment->level === 'Sedang' ? 'wa' : 'er') }}" style="font-size: 0.95rem; font-weight: 700; padding: 4px 12px;" dusk="assessment-level">
+                        Level: {{ $assessment->level }}
+                    </span>
+                </div>
+                <div>
+                    <strong>{{ rtrim(rtrim(number_format($assessment->percentage, 2), '0'), '.') }}%</strong>
+                    <span class="mut">({{ $assessment->total_score }}/{{ $assessment->max_score }} poin)</span>
+                </div>
+                <div class="mut">
+                    Diisi: {{ $assessment->created_at->translatedFormat('d F Y, H:i') }} (Kebun: {{ $assessment->nama_kebun }})
+                </div>
+            </div>
+            @if ($assessment->catatan)
+                <p class="mut" style="margin-top: 0.5rem;">Catatan: {{ $assessment->catatan }}</p>
+            @endif
+        @else
+            <p class="mut" dusk="assessment-empty">Pemasok belum pernah mengisi formulir self-assessment keberlanjutan.</p>
+        @endif
     </div>
 
     <div class="grid2">

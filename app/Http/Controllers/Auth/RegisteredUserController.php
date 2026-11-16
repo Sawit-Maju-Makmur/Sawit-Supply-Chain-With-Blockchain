@@ -53,6 +53,12 @@ class RegisteredUserController extends Controller
             // Spatie role table might not be seeded in testing
         }
 
+        try {
+            $user->ensureSupplier();
+        } catch (\Throwable $e) {
+            // Safe fallback
+        }
+
         event(new Registered($user));
         Auth::login($user);
 

@@ -212,9 +212,9 @@
             <!-- Top Utility Links -->
             <div class="w-full flex justify-between items-center pb-4">
                 <span class="text-xs uppercase tracking-wider text-tertiary font-semibold">Portal Sistem SIPS Sawit</span>
-                <a class="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-container hover:text-primary transition-colors" href="{{ url('/assessments') }}">
-                    <span class="material-symbols-outlined text-base" data-icon="assignment">assignment</span>
-                    <span>Self-Assessment</span>
+                <a class="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-container hover:text-primary transition-colors" href="{{ route('register') }}">
+                    <span class="material-symbols-outlined text-base" data-icon="person_add">person_add</span>
+                    <span>Buat akun</span>
                 </a>
             </div>
 

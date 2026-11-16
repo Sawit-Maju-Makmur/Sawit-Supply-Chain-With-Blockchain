@@ -30,7 +30,7 @@ class SupplierController extends Controller
     public function index(Request $request)
     {
         $suppliers = $this->filtered($request)
-            ->withCount('plots')
+            ->withCount(['lahans', 'plots'])
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate(10)
@@ -48,10 +48,14 @@ class SupplierController extends Controller
     // AC3: detail pemasok (data, lahan, ringkasan dokumen, riwayat status)
     public function show(Request $request, Supplier $supplier)
     {
-        $supplier->load(['plots', 'statusLogs.actor']);
+        $supplier->load(['lahans.documents', 'plots.documents', 'statusLogs.actor', 'latestSelfAssessment']);
+        $hasValidCertification = $supplier->hasValidCertification();
 
         $documentSummary = Document::query()
-            ->whereIn('plot_id', $supplier->plots()->select('plots.id'))
+            ->where(function ($q) use ($supplier) {
+                $q->whereIn('lahan_id', $supplier->lahans()->select('lahans.id'))
+                  ->orWhereIn('plot_id', $supplier->plots()->select('plots.id'));
+            })
             ->selectRaw('status, COUNT(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status');
@@ -60,6 +64,7 @@ class SupplierController extends Controller
             'supplier' => $supplier,
             'documentSummary' => $documentSummary,
             'canManage' => $this->canManage($request),
+            'hasValidCertification' => $hasValidCertification,
         ]);
     }
 
@@ -70,6 +75,10 @@ class SupplierController extends Controller
 
         if ($supplier->status === $new) {
             return back()->with('error', 'Pemasok sudah berstatus '.strtolower(Supplier::STATUSES[$new]).'.');
+        }
+
+        if ($new === Supplier::STATUS_ACTIVE && ! $supplier->hasValidCertification()) {
+            return back()->with('error', 'Pemasok belum dapat diaktifkan karena semua dokumen legalitas harus disetujui dan belum kedaluwarsa.');
         }
 
         $reason = $request->validated('reason');
@@ -99,7 +108,7 @@ class SupplierController extends Controller
     // AC6: export mengikuti filter yang sedang dipakai (CSV pemisah titik koma, terbuka di Excel)
     public function export(Request $request)
     {
-        $query = $this->filtered($request)->withCount('plots')->orderBy('name');
+        $query = $this->filtered($request)->withCount(['lahans', 'plots'])->orderBy('name');
         $filename = 'data-pemasok-'.now()->format('Ymd-His').'.csv';
 
         return response()->streamDownload(function () use ($query) {
@@ -108,8 +117,9 @@ class SupplierController extends Controller
             fputcsv($out, ['Nama', 'Tipe', 'Kabupaten', 'Jumlah lahan', 'Status', 'Email', 'Telepon', 'Tanggal daftar'], ';');
 
             foreach ($query->cursor() as $s) {
+                $lahanCount = ($s->lahans_count ?? 0) > 0 ? $s->lahans_count : ($s->plots_count ?? 0);
                 fputcsv($out, array_map([$this, 'safe'], [
-                    $s->name, $s->type_label, $s->regency, $s->plots_count,
+                    $s->name, $s->type_label, $s->regency, $lahanCount,
                     $s->status_label, $s->email, $s->phone, optional($s->created_at)->format('d/m/Y'),
                 ]), ';');
             }

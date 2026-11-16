@@ -3,6 +3,7 @@
 namespace Tests\Feature\Management;
 
 use App\Models\Document;
+use App\Models\Lahan;
 use App\Models\Plot;
 use App\Models\Supplier;
 use App\Models\User;
@@ -75,10 +76,21 @@ class SupplierManagementTest extends TestCase
     public function test_detail_menampilkan_lahan_dan_ringkasan_dokumen(): void
     {
         $s = Supplier::factory()->create();
-        $plot = Plot::create(['supplier_id' => $s->id, 'name' => 'Lahan Blok A', 'area_ha' => 4.2]);
-        Document::create(['plot_id' => $plot->id, 'status' => 'approved']);
-        Document::create(['plot_id' => $plot->id, 'status' => 'approved']);
-        Document::create(['plot_id' => $plot->id, 'status' => 'rejected']);
+        $lahan = Lahan::create([
+            'supplier_id' => $s->id,
+            'nama_pemasok' => $s->name,
+            'nama_kebun' => 'Lahan Blok A',
+            'lokasi' => 'Kampar',
+            'luas_ha' => 4.2,
+            'status_lahan' => 'SHM',
+        ]);
+        Document::create([
+            'lahan_id' => $lahan->id,
+            'status' => 'approved',
+            'file_path' => 'certificate.pdf',
+        ]);
+        Document::create(['lahan_id' => $lahan->id, 'status' => 'approved']);
+        Document::create(['lahan_id' => $lahan->id, 'status' => 'rejected']);
 
         $this->actingAs($this->userWithRole('management'))
             ->get(route('management.suppliers.show', $s))
@@ -123,6 +135,19 @@ class SupplierManagementTest extends TestCase
     public function test_mengaktifkan_kembali_tanpa_alasan_berhasil(): void
     {
         $s = Supplier::factory()->inactive()->create();
+        $lahan = Lahan::create([
+            'supplier_id' => $s->id,
+            'nama_pemasok' => $s->name,
+            'nama_kebun' => 'Lahan Bersertifikat',
+            'lokasi' => 'Kampar',
+            'luas_ha' => 2,
+            'status_lahan' => 'SHM',
+        ]);
+        Document::create([
+            'lahan_id' => $lahan->id,
+            'status' => 'approved',
+            'file_path' => 'certificate.pdf',
+        ]);
 
         $this->actingAs($this->userWithRole('management'))
             ->patch(route('management.suppliers.status', $s), ['status' => 'active'])
@@ -166,6 +191,32 @@ class SupplierManagementTest extends TestCase
         $csv = $response->streamedContent();
         $this->assertStringContainsString('Koperasi Tani Makmur', $csv);
         $this->assertStringNotContainsString('PT Sawit Lestari', $csv);
+    }
+
+    public function test_detail_menampilkan_self_assessment_dan_nib(): void
+    {
+        $s = Supplier::factory()->create([
+            'nib' => '1234567890123',
+        ]);
+        \App\Models\SelfAssessment::create([
+            'supplier_id' => $s->id,
+            'nama_petani' => 'Pak Budi',
+            'nama_kebun' => 'Kebun Maju',
+            'lokasi' => 'Riau',
+            'luas_lahan' => 3.5,
+            'answers' => ['tanpa_bakar' => 'ya'],
+            'total_score' => 30,
+            'max_score' => 30,
+            'percentage' => 100.0,
+            'level' => 'Tinggi',
+        ]);
+
+        $this->actingAs($this->userWithRole('management'))
+            ->get(route('management.suppliers.show', $s))
+            ->assertOk()
+            ->assertSee('1234567890123')
+            ->assertSee('Tinggi')
+            ->assertSee('100%');
     }
 }
 

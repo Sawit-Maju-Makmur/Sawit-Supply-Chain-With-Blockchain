@@ -4,13 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LahanRequest;
 use App\Models\Lahan;
+use Illuminate\Http\Request;
 
 class LahanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $lahans = Lahan::latest()->paginate(10);
-        return view('lahan.index', compact('lahans'));
+        $supplier = $request->user()->ensureSupplier();
+        $lahans = $supplier->lahans()->latest()->paginate(10);
+
+        return view('lahan.index', compact('lahans', 'supplier'));
     }
 
     public function create()
@@ -20,29 +23,53 @@ class LahanController extends Controller
 
     public function store(LahanRequest $request)
     {
-        Lahan::create($this->validatedAttributes($request));
+        $supplier = $request->user()->ensureSupplier();
+        $attributes = $this->validatedAttributes($request);
+        $attributes['supplier_id'] = $supplier->id;
+        $attributes['nama_pemasok'] = $supplier->name ?: ($request->input('nama_pemasok') ?: 'Pemasok');
+
+        $supplier->lahans()->create($attributes);
+
         return redirect()->route('lahan.index')->with('success', 'Data lahan berhasil disimpan.');
     }
 
-    public function show(Lahan $lahan)
+    public function show(Request $request, Lahan $lahan)
     {
+        $supplier = $request->user()->ensureSupplier();
+        abort_unless($lahan->supplier_id === $supplier->id, 404);
+
         return redirect()->route('lahan.edit', $lahan);
     }
 
-    public function edit(Lahan $lahan)
+    public function edit(Request $request, Lahan $lahan)
     {
+        $supplier = $request->user()->ensureSupplier();
+        abort_unless($lahan->supplier_id === $supplier->id, 404);
+
         return view('lahan.edit', compact('lahan'));
     }
 
     public function update(LahanRequest $request, Lahan $lahan)
     {
-        $lahan->update($this->validatedAttributes($request));
+        $supplier = $request->user()->ensureSupplier();
+        abort_unless($lahan->supplier_id === $supplier->id, 404);
+
+        $attributes = $this->validatedAttributes($request);
+        $attributes['supplier_id'] = $supplier->id;
+        $attributes['nama_pemasok'] = $supplier->name ?: ($request->input('nama_pemasok') ?: 'Pemasok');
+
+        $lahan->update($attributes);
+
         return redirect()->route('lahan.index')->with('success', 'Data lahan berhasil diperbarui.');
     }
 
-    public function destroy(Lahan $lahan)
+    public function destroy(Request $request, Lahan $lahan)
     {
+        $supplier = $request->user()->ensureSupplier();
+        abort_unless($lahan->supplier_id === $supplier->id, 404);
+
         $lahan->delete();
+
         return redirect()->route('lahan.index')->with('success', 'Data lahan berhasil dihapus.');
     }
 

@@ -50,6 +50,36 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(Supplier::class);
     }
 
+    public function ensureSupplier(): Supplier
+    {
+        if ($this->relationLoaded('supplier') && $this->supplier) {
+            return $this->supplier;
+        }
+
+        $supplier = Supplier::where('user_id', $this->id)->first();
+        if ($supplier) {
+            return $supplier;
+        }
+
+        if ($this->email) {
+            $supplier = Supplier::where('email', $this->email)->first();
+            if ($supplier) {
+                $supplier->update(['user_id' => $this->id]);
+                return $supplier;
+            }
+        }
+
+        return Supplier::create([
+            'user_id' => $this->id,
+            'type'    => 'mandiri',
+            'name'    => $this->name ?? 'Pemasok',
+            'email'   => $this->email,
+            'phone'   => $this->phone,
+            'address' => $this->address,
+            'status'  => Supplier::STATUS_DRAFT,
+        ]);
+    }
+
     public function getRoleAttribute(): ?string
     {
         if (! empty($this->attributes['role'])) {

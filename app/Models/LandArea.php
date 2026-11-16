@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @deprecated Modul peta duplikat. Digantikan oleh Lahan (PBI 5/6).
+ */
 class LandArea extends Model
 {
     /**

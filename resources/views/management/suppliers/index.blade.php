@@ -46,7 +46,7 @@
                         <td><strong>{{ $s->name }}</strong></td>
                         <td>{{ $s->type_label }}</td>
                         <td>{{ $s->regency ?? '-' }}</td>
-                        <td>{{ $s->plots_count }}</td>
+                        <td>{{ ($s->lahans_count ?? 0) > 0 ? $s->lahans_count : ($s->plots_count ?? 0) }}</td>
                         <td>
                             <span class="chip {{ $s->status === 'active' ? 'ok' : ($s->status === 'inactive' ? 'er' : 'wa') }}">{{ $s->status_label }}</span>
                         </td>

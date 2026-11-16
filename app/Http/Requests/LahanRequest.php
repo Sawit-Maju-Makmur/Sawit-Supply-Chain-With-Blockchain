@@ -17,7 +17,7 @@ class LahanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nama_pemasok' => 'required|string|max:255',
+            'nama_pemasok' => 'nullable|string|max:255',
             'nama_kebun'   => 'required|string|max:255',
             'lokasi'       => 'required|string|max:255',
             'latitude'     => 'nullable|numeric|between:-90,90',

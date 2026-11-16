@@ -10,6 +10,14 @@ class LahanPolygonTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $user = \App\Models\User::factory()->create(['role' => 'pemasok']);
+        $this->actingAs($user);
+    }
+
     public function test_lahan_form_renders_polygon_map(): void
     {
         $this->get(route('lahan.create'))

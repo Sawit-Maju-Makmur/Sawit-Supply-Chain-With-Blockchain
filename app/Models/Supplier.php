@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -24,7 +25,7 @@ class Supplier extends Model
     public const STATUSES = ['draft' => 'Draft', 'active' => 'Aktif', 'inactive' => 'Nonaktif'];
 
     protected $fillable = [
-        'user_id', 'type', 'name', 'nik', 'npwp', 'address', 'regency', 'phone', 'email',
+        'user_id', 'type', 'name', 'nik', 'npwp', 'nib', 'address', 'regency', 'phone', 'email',
         'status', 'deactivation_reason', 'deactivated_at',
     ];
 
@@ -38,9 +39,25 @@ class Supplier extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function lahans(): HasMany
+    {
+        return $this->hasMany(Lahan::class);
+    }
+
+    /** @deprecated Gunakan lahans() */
     public function plots(): HasMany
     {
         return $this->hasMany(Plot::class);
+    }
+
+    public function selfAssessments(): HasMany
+    {
+        return $this->hasMany(SelfAssessment::class);
+    }
+
+    public function latestSelfAssessment(): HasOne
+    {
+        return $this->hasOne(SelfAssessment::class)->latestOfMany();
     }
 
     public function statusLogs(): HasMany
@@ -68,13 +85,66 @@ class Supplier extends Model
         return $q->where('status', self::STATUS_ACTIVE);
     }
 
+    public function scopeOperable(Builder $query): Builder
+    {
+        return $query
+            ->where('status', self::STATUS_ACTIVE)
+            ->where(function (Builder $q) {
+                $q->whereHas('lahans.documents', function (Builder $documents) {
+                    $documents->where('status', 'approved')
+                        ->whereNotNull('file_path')
+                        ->where(function (Builder $expiry) {
+                            $expiry->whereNull('expires_at')
+                                ->orWhereDate('expires_at', '>=', today());
+                        });
+                })->orWhereHas('plots.documents', function (Builder $documents) {
+                    $documents->where('status', 'approved')
+                        ->whereNotNull('file_path')
+                        ->where(function (Builder $expiry) {
+                            $expiry->whereNull('expires_at')
+                                ->orWhereDate('expires_at', '>=', today());
+                        });
+                });
+            })
+            ->whereDoesntHave('lahans.documents', function (Builder $documents) {
+                $documents->where(function (Builder $invalid) {
+                    $invalid->where('status', '!=', 'approved')
+                        ->orWhereNull('file_path')
+                        ->orWhereDate('expires_at', '<', today());
+                });
+            })
+            ->whereDoesntHave('plots.documents', function (Builder $documents) {
+                $documents->where(function (Builder $invalid) {
+                    $invalid->where('status', '!=', 'approved')
+                        ->orWhereNull('file_path')
+                        ->orWhereDate('expires_at', '<', today());
+                });
+            });
+    }
+
     /**
      * Dipakai PBI lain (AC5): pemasok nonaktif tidak boleh membuat transaksi baru, misalnya
      * di PBI 12: abort_unless($supplier->isActive(), 403, 'Pemasok nonaktif.');
      */
     public function isActive(): bool
     {
-        return $this->status === self::STATUS_ACTIVE;
+        return $this->status === self::STATUS_ACTIVE && $this->hasValidCertification();
+    }
+
+    public function hasValidCertification(): bool
+    {
+        $documents = Document::query()
+            ->where(function (Builder $query) {
+                $query->whereHas('lahan', fn (Builder $lahans) => $lahans->where('supplier_id', $this->getKey()))
+                    ->orWhereHas('plot', fn (Builder $plots) => $plots->where('supplier_id', $this->getKey()));
+            });
+
+        return $documents->exists()
+            && ! $documents->where(function (Builder $invalid) {
+                $invalid->where('status', '!=', 'approved')
+                    ->orWhereNull('file_path')
+                    ->orWhereDate('expires_at', '<', today());
+            })->exists();
     }
 
     public function getTypeLabelAttribute(): string
