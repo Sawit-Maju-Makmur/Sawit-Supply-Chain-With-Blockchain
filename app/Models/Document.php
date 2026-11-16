@@ -10,6 +10,7 @@ class Document extends Model
     public const STATUSES = ['approved' => 'Disetujui', 'pending' => 'Menunggu', 'rejected' => 'Ditolak'];
 
     protected $fillable = [
+        'lahan_id',
         'plot_id',
         'type',
         'file_path',
@@ -29,6 +30,12 @@ class Document extends Model
         ];
     }
 
+    public function lahan(): BelongsTo
+    {
+        return $this->belongsTo(Lahan::class);
+    }
+
+    /** @deprecated Gunakan lahan() */
     public function plot(): BelongsTo
     {
         return $this->belongsTo(Plot::class);

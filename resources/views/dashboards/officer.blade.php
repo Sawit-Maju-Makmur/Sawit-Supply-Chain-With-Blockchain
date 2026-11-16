@@ -114,7 +114,7 @@
                         <div class="action-item">
                             <div>
                                 <span class="action-name">{{ $document->type }}</span>
-                                <span class="action-sub">{{ $document->plot?->supplier?->name ?? $document->plot?->name ?? 'Pemasok tidak tersedia' }}</span>
+                                <span class="action-sub">{{ ($document->lahan?->supplier ?? $document->plot?->supplier)?->name ?? $document->lahan?->nama_kebun ?? $document->plot?->name ?? 'Pemasok tidak tersedia' }}</span>
                             </div>
                             <span class="record-badge" data-status="{{ $document->status }}">{{ \App\Models\Document::STATUSES[$document->status] ?? ucfirst($document->status) }}</span>
                         </div>

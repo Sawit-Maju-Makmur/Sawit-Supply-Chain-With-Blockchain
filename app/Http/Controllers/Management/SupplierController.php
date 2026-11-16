@@ -48,11 +48,14 @@ class SupplierController extends Controller
     // AC3: detail pemasok (data, lahan, ringkasan dokumen, riwayat status)
     public function show(Request $request, Supplier $supplier)
     {
-        $supplier->load(['plots', 'statusLogs.actor']);
+        $supplier->load(['lahans.documents', 'plots.documents', 'statusLogs.actor']);
         $hasValidCertification = $supplier->hasValidCertification();
 
         $documentSummary = Document::query()
-            ->whereIn('plot_id', $supplier->plots()->select('plots.id'))
+            ->where(function ($q) use ($supplier) {
+                $q->whereIn('lahan_id', $supplier->lahans()->select('lahans.id'))
+                  ->orWhereIn('plot_id', $supplier->plots()->select('plots.id'));
+            })
             ->selectRaw('status, COUNT(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status');

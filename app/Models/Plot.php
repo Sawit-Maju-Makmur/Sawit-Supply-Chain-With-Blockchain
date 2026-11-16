@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/** PLACEHOLDER milik PBI 5 (Plot / Lahan untuk Supplier). */
+/**
+ * @deprecated Digantikan oleh Lahan (PBI 5/6). Dipertahankan untuk kompatibilitas data lama.
+ */
 class Plot extends Model
 {
     public const OWNERSHIP = ['owned' => 'Milik sendiri', 'rented' => 'Sewa', 'partnership' => 'Kemitraan'];

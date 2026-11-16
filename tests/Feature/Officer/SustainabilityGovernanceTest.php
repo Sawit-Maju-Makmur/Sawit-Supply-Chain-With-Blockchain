@@ -4,6 +4,7 @@ namespace Tests\Feature\Officer;
 
 use App\Models\AssessmentCriterion;
 use App\Models\Document;
+use App\Models\Lahan;
 use App\Models\Plot;
 use App\Models\Supplier;
 use App\Models\User;
@@ -77,9 +78,16 @@ class SustainabilityGovernanceTest extends TestCase
     {
         $officer = $this->userWithRole('sustainability_officer');
         $supplier = Supplier::factory()->create(['name' => 'Pemasok Review']);
-        $plot = Plot::create(['supplier_id' => $supplier->id, 'name' => 'Plot Review', 'area_ha' => 3]);
+        $lahan = Lahan::create([
+            'supplier_id' => $supplier->id,
+            'nama_pemasok' => $supplier->name,
+            'nama_kebun' => 'Plot Review',
+            'lokasi' => 'Kampar',
+            'luas_ha' => 3,
+            'status_lahan' => 'SHM',
+        ]);
         Document::create([
-            'plot_id' => $plot->id,
+            'lahan_id' => $lahan->id,
             'status' => 'pending',
             'file_path' => 'legal-documents/'.$supplier->id.'/review.pdf',
         ]);
@@ -104,11 +112,18 @@ class SustainabilityGovernanceTest extends TestCase
         $officer = $this->userWithRole('sustainability_officer');
         Storage::fake('local');
         $supplier = Supplier::factory()->create();
-        $plot = Plot::create(['supplier_id' => $supplier->id, 'name' => 'Kebun Valid', 'area_ha' => 3]);
+        $lahan = Lahan::create([
+            'supplier_id' => $supplier->id,
+            'nama_pemasok' => $supplier->name,
+            'nama_kebun' => 'Kebun Valid',
+            'lokasi' => 'Kampar',
+            'luas_ha' => 3,
+            'status_lahan' => 'SHM',
+        ]);
         $path = 'legal-documents/'.$supplier->id.'/valid.pdf';
         Storage::disk('local')->put($path, 'legal certificate');
         $document = Document::create([
-            'plot_id' => $plot->id,
+            'lahan_id' => $lahan->id,
             'status' => 'pending',
             'file_path' => $path,
             'original_filename' => 'valid.pdf',
@@ -135,8 +150,15 @@ class SustainabilityGovernanceTest extends TestCase
     {
         $officer = $this->userWithRole('sustainability_officer');
         $supplier = Supplier::factory()->create(['status' => Supplier::STATUS_ACTIVE]);
-        $plot = Plot::create(['supplier_id' => $supplier->id, 'name' => 'Kebun Ditolak', 'area_ha' => 3]);
-        $document = Document::create(['plot_id' => $plot->id, 'status' => 'pending']);
+        $lahan = Lahan::create([
+            'supplier_id' => $supplier->id,
+            'nama_pemasok' => $supplier->name,
+            'nama_kebun' => 'Kebun Ditolak',
+            'lokasi' => 'Kampar',
+            'luas_ha' => 3,
+            'status_lahan' => 'SHM',
+        ]);
+        $document = Document::create(['lahan_id' => $lahan->id, 'status' => 'pending']);
 
         $this->actingAs($officer)
             ->patch(route('officer.documents.review', $document), ['status' => 'rejected'])
@@ -163,9 +185,16 @@ class SustainabilityGovernanceTest extends TestCase
     {
         $officer = $this->userWithRole('sustainability_officer');
         $supplier = Supplier::factory()->create();
-        $plot = Plot::create(['supplier_id' => $supplier->id, 'name' => 'Kebun Kedaluwarsa', 'area_ha' => 3]);
+        $lahan = Lahan::create([
+            'supplier_id' => $supplier->id,
+            'nama_pemasok' => $supplier->name,
+            'nama_kebun' => 'Kebun Kedaluwarsa',
+            'lokasi' => 'Kampar',
+            'luas_ha' => 3,
+            'status_lahan' => 'SHM',
+        ]);
         $document = Document::create([
-            'plot_id' => $plot->id,
+            'lahan_id' => $lahan->id,
             'status' => 'pending',
             'expires_at' => today()->subDay(),
         ]);
@@ -181,8 +210,15 @@ class SustainabilityGovernanceTest extends TestCase
     {
         $officer = $this->userWithRole('sustainability_officer');
         $supplier = Supplier::factory()->create();
-        $plot = Plot::create(['supplier_id' => $supplier->id, 'name' => 'Kebun Tanpa Berkas', 'area_ha' => 3]);
-        $document = Document::create(['plot_id' => $plot->id, 'status' => 'pending']);
+        $lahan = Lahan::create([
+            'supplier_id' => $supplier->id,
+            'nama_pemasok' => $supplier->name,
+            'nama_kebun' => 'Kebun Tanpa Berkas',
+            'lokasi' => 'Kampar',
+            'luas_ha' => 3,
+            'status_lahan' => 'SHM',
+        ]);
+        $document = Document::create(['lahan_id' => $lahan->id, 'status' => 'pending']);
 
         $this->actingAs($officer)
             ->patch(route('officer.documents.review', $document), ['status' => 'approved'])
@@ -206,16 +242,23 @@ class SustainabilityGovernanceTest extends TestCase
     public function test_supplier_is_operable_only_when_every_submitted_document_is_approved_and_current(): void
     {
         $supplier = Supplier::factory()->create(['status' => Supplier::STATUS_ACTIVE]);
-        $plot = Plot::create(['supplier_id' => $supplier->id, 'name' => 'Kebun Operasional', 'area_ha' => 3]);
-        Document::create(['plot_id' => $plot->id, 'status' => 'approved', 'file_path' => 'certificate.pdf']);
+        $lahan = Lahan::create([
+            'supplier_id' => $supplier->id,
+            'nama_pemasok' => $supplier->name,
+            'nama_kebun' => 'Kebun Operasional',
+            'lokasi' => 'Kampar',
+            'luas_ha' => 3,
+            'status_lahan' => 'SHM',
+        ]);
+        Document::create(['lahan_id' => $lahan->id, 'status' => 'approved', 'file_path' => 'certificate.pdf']);
 
         $this->assertTrue($supplier->fresh()->isActive());
 
-        $plot->documents()->firstOrFail()->update(['expires_at' => today()->subDay()]);
+        $lahan->documents()->firstOrFail()->update(['expires_at' => today()->subDay()]);
         $this->assertFalse($supplier->fresh()->isActive());
-        $plot->documents()->firstOrFail()->update(['expires_at' => null]);
+        $lahan->documents()->firstOrFail()->update(['expires_at' => null]);
 
-        Document::create(['plot_id' => $plot->id, 'status' => 'pending']);
+        Document::create(['lahan_id' => $lahan->id, 'status' => 'pending']);
         $this->assertFalse($supplier->fresh()->isActive());
     }
 }

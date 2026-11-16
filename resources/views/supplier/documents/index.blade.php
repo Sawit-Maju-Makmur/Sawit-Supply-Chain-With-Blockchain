@@ -23,10 +23,11 @@
                 </div>
             @endif
 
-            @forelse ($plots as $plot)
+            @php $plotList = $lahans ?? $plots ?? []; @endphp
+            @forelse ($plotList as $plot)
                 <section class="mt-6 rounded-2xl border border-slate-200 p-5">
-                    <h2 class="text-lg font-semibold">{{ $plot->name }}</h2>
-                    <p class="text-sm text-slate-600">{{ $plot->regency ?: 'Kabupaten belum diisi' }}</p>
+                    <h2 class="text-lg font-semibold">{{ $plot->nama_kebun ?? $plot->name }}</h2>
+                    <p class="text-sm text-slate-600">{{ $plot->lokasi ?? $plot->regency ?? 'Lokasi belum diisi' }}</p>
 
                     @if ($plot->documents->isNotEmpty())
                         <div class="mt-4 space-y-3">
@@ -35,8 +36,8 @@
                                     <div>
                                         <p class="font-medium">{{ $document->type }}</p>
                                         <p class="text-sm text-slate-600">
-                                            Status: {{ \App\Models\Document::STATUSES[$document->status] ?? ucfirst($document->status) }}
-                                            · Kedaluwarsa: {{ $document->expires_at?->format('d/m/Y') ?? 'Tidak dicantumkan' }}
+                                             Status: {{ \App\Models\Document::STATUSES[$document->status] ?? ucfirst($document->status) }}
+                                             · Kedaluwarsa: {{ $document->expires_at?->format('d/m/Y') ?? 'Tidak dicantumkan' }}
                                         </p>
                                         @if ($document->review_notes)
                                             <p class="mt-1 text-sm text-rose-700">Catatan officer: {{ $document->review_notes }}</p>
@@ -70,7 +71,7 @@
                     </form>
                 </section>
             @empty
-                <p class="mt-6 rounded-xl bg-amber-50 p-4 text-amber-900">Belum ada plot yang terhubung dengan akun pemasok ini. Hubungi pengelola untuk menautkan plot sebelum mengirim dokumen.</p>
+                <p class="mt-6 rounded-xl bg-amber-50 p-4 text-amber-900">Belum ada lahan yang terhubung dengan akun pemasok ini. Silakan <a href="{{ route('lahan.create') }}" class="font-semibold underline">tambah data lahan</a> sebelum mengirim dokumen legalitas.</p>
             @endforelse
         </div>
     </div>

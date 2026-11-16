@@ -90,10 +90,10 @@
                     @foreach ($recentPlots as $plot)
                         <div class="action-item">
                             <div>
-                                <span class="action-name">{{ $plot->name }}</span>
-                                <span class="action-sub">{{ $plot->regency ?: 'Kabupaten belum diisi' }} · {{ number_format((float) $plot->area_ha, 2, ',', '.') }} ha</span>
+                                <span class="action-name">{{ $plot->nama_kebun ?? $plot->name }}</span>
+                                <span class="action-sub">{{ $plot->lokasi ?? $plot->regency ?? 'Kabupaten belum diisi' }} · {{ number_format((float) ($plot->luas_ha ?? $plot->area_ha), 2, ',', '.') }} ha</span>
                             </div>
-                            <span class="action-sub">{{ \App\Models\Plot::OWNERSHIP[$plot->ownership_status] ?? $plot->ownership_status }}</span>
+                            <span class="action-sub">{{ \App\Models\Lahan::STATUS[$plot->status_lahan ?? ''] ?? \App\Models\Plot::OWNERSHIP[$plot->ownership_status ?? ''] ?? ($plot->status_lahan ?? $plot->ownership_status ?? '-') }}</span>
                         </div>
                     @endforeach
                 </div>
@@ -130,7 +130,7 @@
                     <div class="action-item">
                         <div>
                             <span class="action-name">{{ $document->type }}</span>
-                            <span class="action-sub">{{ $document->plot?->name ?? 'Plot tidak tersedia' }}</span>
+                            <span class="action-sub">{{ $document->lahan?->nama_kebun ?? $document->plot?->name ?? 'Lahan tidak tersedia' }}</span>
                         </div>
                         <span class="record-badge" data-status="{{ $document->status }}">{{ \App\Models\Document::STATUSES[$document->status] ?? ucfirst($document->status) }}</span>
                     </div>

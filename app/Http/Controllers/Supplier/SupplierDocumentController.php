@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Supplier;
 
 use App\Http\Controllers\Controller;
 use App\Models\Document;
+use App\Models\Lahan;
 use App\Models\Plot;
 use App\Models\Supplier;
 use App\Models\User;
@@ -18,16 +19,16 @@ class SupplierDocumentController extends Controller
 {
     public function index(Request $request): View
     {
-        $supplier = $this->supplierFor($request->user());
-        $plots = $supplier->plots()->with('documents')->latest()->get();
+        $supplier = $request->user()->ensureSupplier();
+        $lahans = $supplier->lahans()->with('documents')->latest()->get();
 
-        return view('supplier.documents.index', compact('supplier', 'plots'));
+        return view('supplier.documents.index', compact('supplier', 'lahans'));
     }
 
-    public function store(Request $request, Plot $plot): RedirectResponse
+    public function store(Request $request, Lahan $lahan): RedirectResponse
     {
-        $supplier = $this->supplierFor($request->user());
-        abort_unless($plot->supplier_id === $supplier->id, 404);
+        $supplier = $request->user()->ensureSupplier();
+        abort_unless($lahan->supplier_id === $supplier->id, 404);
 
         $validated = $request->validate([
             'type' => ['required', 'string', 'max:100'],
@@ -41,7 +42,7 @@ class SupplierDocumentController extends Controller
             throw new RuntimeException('Berkas legalitas gagal disimpan.');
         }
 
-        $plot->documents()->create([
+        $lahan->documents()->create([
             'type' => $validated['type'],
             'expires_at' => $validated['expires_at'] ?? null,
             'file_path' => $path,
@@ -55,8 +56,12 @@ class SupplierDocumentController extends Controller
 
     public function download(Request $request, Document $document): StreamedResponse
     {
-        $supplier = $this->supplierFor($request->user());
-        abort_unless($document->plot()->where('supplier_id', $supplier->id)->exists(), 404);
+        $supplier = $request->user()->ensureSupplier();
+        abort_unless(
+            ($document->lahan && $document->lahan->supplier_id === $supplier->id) ||
+            ($document->plot && $document->plot->supplier_id === $supplier->id),
+            404
+        );
 
         return $this->downloadDocument($document);
     }

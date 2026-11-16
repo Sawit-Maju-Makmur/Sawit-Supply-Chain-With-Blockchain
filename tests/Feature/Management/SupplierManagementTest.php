@@ -3,6 +3,7 @@
 namespace Tests\Feature\Management;
 
 use App\Models\Document;
+use App\Models\Lahan;
 use App\Models\Plot;
 use App\Models\Supplier;
 use App\Models\User;
@@ -75,14 +76,21 @@ class SupplierManagementTest extends TestCase
     public function test_detail_menampilkan_lahan_dan_ringkasan_dokumen(): void
     {
         $s = Supplier::factory()->create();
-        $plot = Plot::create(['supplier_id' => $s->id, 'name' => 'Lahan Blok A', 'area_ha' => 4.2]);
+        $lahan = Lahan::create([
+            'supplier_id' => $s->id,
+            'nama_pemasok' => $s->name,
+            'nama_kebun' => 'Lahan Blok A',
+            'lokasi' => 'Kampar',
+            'luas_ha' => 4.2,
+            'status_lahan' => 'SHM',
+        ]);
         Document::create([
-            'plot_id' => $plot->id,
+            'lahan_id' => $lahan->id,
             'status' => 'approved',
             'file_path' => 'certificate.pdf',
         ]);
-        Document::create(['plot_id' => $plot->id, 'status' => 'approved']);
-        Document::create(['plot_id' => $plot->id, 'status' => 'rejected']);
+        Document::create(['lahan_id' => $lahan->id, 'status' => 'approved']);
+        Document::create(['lahan_id' => $lahan->id, 'status' => 'rejected']);
 
         $this->actingAs($this->userWithRole('management'))
             ->get(route('management.suppliers.show', $s))
@@ -127,9 +135,16 @@ class SupplierManagementTest extends TestCase
     public function test_mengaktifkan_kembali_tanpa_alasan_berhasil(): void
     {
         $s = Supplier::factory()->inactive()->create();
-        $plot = Plot::create(['supplier_id' => $s->id, 'name' => 'Lahan Bersertifikat', 'area_ha' => 2]);
+        $lahan = Lahan::create([
+            'supplier_id' => $s->id,
+            'nama_pemasok' => $s->name,
+            'nama_kebun' => 'Lahan Bersertifikat',
+            'lokasi' => 'Kampar',
+            'luas_ha' => 2,
+            'status_lahan' => 'SHM',
+        ]);
         Document::create([
-            'plot_id' => $plot->id,
+            'lahan_id' => $lahan->id,
             'status' => 'approved',
             'file_path' => 'certificate.pdf',
         ]);

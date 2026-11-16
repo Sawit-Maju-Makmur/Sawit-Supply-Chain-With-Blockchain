@@ -41,8 +41,8 @@
                         @endphp
                         <tr>
                             <td>
-                                <strong>{{ $document->plot?->supplier?->name ?? 'Pemasok tidak tersedia' }}</strong><br>
-                                <span class="mut">{{ $document->plot?->name ?? 'Plot tidak tersedia' }}</span>
+                                <strong>{{ ($document->lahan?->supplier ?? $document->plot?->supplier)?->name ?? 'Pemasok tidak tersedia' }}</strong><br>
+                                <span class="mut">{{ $document->lahan?->nama_kebun ?? $document->plot?->name ?? 'Lahan tidak tersedia' }}</span>
                             </td>
                             <td>
                                 {{ $document->type }}

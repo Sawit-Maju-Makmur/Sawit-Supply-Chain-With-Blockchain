@@ -46,7 +46,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'role:pemasok'])->group(function () {
     Route::resource('lahan', LahanController::class);
     Route::get('/pemasok/documents', [SupplierDocumentController::class, 'index'])->name('pemasok.documents.index');
-    Route::post('/pemasok/documents/{plot}', [SupplierDocumentController::class, 'store'])->name('pemasok.documents.store');
+    Route::post('/pemasok/documents/{lahan}', [SupplierDocumentController::class, 'store'])->name('pemasok.documents.store');
     Route::get('/pemasok/documents/{document}/file', [SupplierDocumentController::class, 'download'])->name('pemasok.documents.download');
 });
 

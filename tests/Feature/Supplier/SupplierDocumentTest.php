@@ -3,7 +3,7 @@
 namespace Tests\Feature\Supplier;
 
 use App\Models\Document;
-use App\Models\Plot;
+use App\Models\Lahan;
 use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,10 +20,17 @@ class SupplierDocumentTest extends TestCase
         Storage::fake('local');
         $user = User::factory()->create(['role' => 'pemasok']);
         $supplier = Supplier::factory()->create(['user_id' => $user->id]);
-        $plot = Plot::create(['supplier_id' => $supplier->id, 'name' => 'Kebun Saya', 'area_ha' => 2]);
+        $lahan = Lahan::create([
+            'supplier_id' => $supplier->id,
+            'nama_pemasok' => $supplier->name,
+            'nama_kebun' => 'Kebun Saya',
+            'lokasi' => 'Kampar',
+            'luas_ha' => 2,
+            'status_lahan' => 'SHM',
+        ]);
 
         $this->actingAs($user)
-            ->post(route('pemasok.documents.store', $plot), [
+            ->post(route('pemasok.documents.store', $lahan), [
                 'type' => 'ISPO',
                 'expires_at' => today()->addYear()->toDateString(),
                 'file' => UploadedFile::fake()->create('sertifikat.pdf', 100, 'application/pdf'),
@@ -54,11 +61,18 @@ class SupplierDocumentTest extends TestCase
         $user = User::factory()->create(['role' => 'pemasok']);
         Supplier::factory()->create(['user_id' => $user->id]);
         $otherSupplier = Supplier::factory()->create();
-        $plot = Plot::create(['supplier_id' => $otherSupplier->id, 'name' => 'Plot Lain', 'area_ha' => 2]);
+        $lahan = Lahan::create([
+            'supplier_id' => $otherSupplier->id,
+            'nama_pemasok' => $otherSupplier->name,
+            'nama_kebun' => 'Plot Lain',
+            'lokasi' => 'Siak',
+            'luas_ha' => 2,
+            'status_lahan' => 'SHM',
+        ]);
         $path = 'legal-documents/'.$otherSupplier->id.'/other.pdf';
         Storage::disk('local')->put($path, 'legal certificate');
         $document = Document::create([
-            'plot_id' => $plot->id,
+            'lahan_id' => $lahan->id,
             'type' => 'ISPO',
             'file_path' => $path,
             'original_filename' => 'other.pdf',
@@ -66,7 +80,7 @@ class SupplierDocumentTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->post(route('pemasok.documents.store', $plot), [])
+            ->post(route('pemasok.documents.store', $lahan), [])
             ->assertNotFound();
 
         $this->actingAs($user)

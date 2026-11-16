@@ -18,7 +18,7 @@ class DocumentReviewController extends Controller
     public function index(): View
     {
         $documents = Document::query()
-            ->with(['plot.supplier', 'reviewedBy'])
+            ->with(['lahan.supplier', 'plot.supplier', 'reviewedBy'])
             ->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
             ->latest()
             ->paginate(20);
@@ -63,7 +63,7 @@ class DocumentReviewController extends Controller
                 return;
             }
 
-            $supplier = $document->plot()->with('supplier')->first()?->supplier;
+            $supplier = $document->lahan?->supplier ?? $document->plot?->supplier;
             if (! $supplier || $supplier->status !== Supplier::STATUS_ACTIVE) {
                 return;
             }

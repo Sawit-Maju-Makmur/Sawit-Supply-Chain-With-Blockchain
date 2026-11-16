@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Document;
+use App\Models\Lahan;
 use App\Models\LandArea;
 use App\Models\Plot;
 use App\Models\Supplier;
@@ -18,20 +19,26 @@ class DashboardTest extends TestCase
     {
         $user = User::factory()->create(['role' => 'pemasok']);
         $supplier = Supplier::factory()->create(['user_id' => $user->id]);
-        $plot = Plot::create([
+        $lahan = Lahan::create([
             'supplier_id' => $supplier->id,
-            'name' => 'Kebun Akun Saya',
-            'area_ha' => 4.5,
+            'nama_pemasok' => $supplier->name,
+            'nama_kebun' => 'Kebun Akun Saya',
+            'lokasi' => 'Kampar',
+            'luas_ha' => 4.5,
+            'status_lahan' => 'SHM',
         ]);
-        Document::create(['plot_id' => $plot->id, 'status' => 'pending']);
+        Document::create(['lahan_id' => $lahan->id, 'type' => 'SHM', 'status' => 'pending']);
 
         $otherSupplier = Supplier::factory()->create();
-        $otherPlot = Plot::create([
+        $otherLahan = Lahan::create([
             'supplier_id' => $otherSupplier->id,
-            'name' => 'Kebun Pemasok Lain',
-            'area_ha' => 8,
+            'nama_pemasok' => $otherSupplier->name,
+            'nama_kebun' => 'Kebun Pemasok Lain',
+            'lokasi' => 'Siak',
+            'luas_ha' => 8,
+            'status_lahan' => 'SHM',
         ]);
-        Document::create(['plot_id' => $otherPlot->id, 'status' => 'approved']);
+        Document::create(['lahan_id' => $otherLahan->id, 'type' => 'SHM', 'status' => 'approved']);
 
         LandArea::create([
             'user_id' => $user->id,
@@ -63,20 +70,27 @@ class DashboardTest extends TestCase
     {
         $officer = User::factory()->create(['role' => 'sustainability_officer']);
         $supplier = Supplier::factory()->create(['name' => 'Pemasok Dashboard']);
-        $plot = Plot::create([
+        $lahan = Lahan::create([
             'supplier_id' => $supplier->id,
-            'name' => 'Plot Dashboard',
-            'area_ha' => 3,
+            'nama_pemasok' => $supplier->name,
+            'nama_kebun' => 'Plot Dashboard',
+            'lokasi' => 'Kampar',
+            'luas_ha' => 3,
+            'status_lahan' => 'SHM',
         ]);
-        Document::create(['plot_id' => $plot->id, 'status' => 'pending']);
+        Document::create(['lahan_id' => $lahan->id, 'type' => 'SHM', 'status' => 'pending']);
         $operableSupplier = Supplier::factory()->create(['name' => 'Pemasok Bersertifikat']);
-        $operablePlot = Plot::create([
+        $operableLahan = Lahan::create([
             'supplier_id' => $operableSupplier->id,
-            'name' => 'Plot Bersertifikat',
-            'area_ha' => 2,
+            'nama_pemasok' => $operableSupplier->name,
+            'nama_kebun' => 'Plot Bersertifikat',
+            'lokasi' => 'Kampar',
+            'luas_ha' => 2,
+            'status_lahan' => 'SHM',
         ]);
         Document::create([
-            'plot_id' => $operablePlot->id,
+            'lahan_id' => $operableLahan->id,
+            'type' => 'SHM',
             'status' => 'approved',
             'file_path' => 'certificate.pdf',
         ]);
@@ -97,12 +111,15 @@ class DashboardTest extends TestCase
     {
         $exporter = User::factory()->create(['role' => 'eksportir_importir']);
         $supplier = Supplier::factory()->create(['name' => 'Pemasok Ekspor']);
-        $plot = Plot::create([
+        $lahan = Lahan::create([
             'supplier_id' => $supplier->id,
-            'name' => 'Plot Ekspor',
-            'area_ha' => 6,
+            'nama_pemasok' => $supplier->name,
+            'nama_kebun' => 'Plot Ekspor',
+            'lokasi' => 'Kampar',
+            'luas_ha' => 6,
+            'status_lahan' => 'SHM',
         ]);
-        Document::create(['plot_id' => $plot->id, 'status' => 'rejected']);
+        Document::create(['lahan_id' => $lahan->id, 'type' => 'SHM', 'status' => 'rejected']);
 
         $this->actingAs($exporter)
             ->get(route('eksportir.dashboard'))

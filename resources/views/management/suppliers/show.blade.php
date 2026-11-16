@@ -46,19 +46,28 @@
         </div>
     </div>
 
+    @php
+        $lahanItems = $supplier->lahans->isNotEmpty() ? $supplier->lahans : $supplier->plots;
+    @endphp
     <div class="card">
-        <h3>Lahan ({{ $supplier->plots->count() }})</h3>
+        <h3>Lahan ({{ $lahanItems->count() }})</h3>
         <div class="tw">
             <table>
-                <thead><tr><th>Nama lahan</th><th>Kabupaten</th><th>Luas (ha)</th><th>Kepemilikan</th><th>Tahun tanam</th></tr></thead>
+                <thead><tr><th>Nama kebun / lahan</th><th>Lokasi / Kabupaten</th><th>Luas (ha)</th><th>Status lahan</th><th>Batas poligon</th></tr></thead>
                 <tbody>
-                @forelse ($supplier->plots as $p)
+                @forelse ($lahanItems as $p)
                     <tr>
-                        <td>{{ $p->name }}</td>
-                        <td>{{ $p->regency ?? '-' }}</td>
-                        <td>{{ $p->area_ha }}</td>
-                        <td>{{ \App\Models\Plot::OWNERSHIP[$p->ownership_status] ?? $p->ownership_status }}</td>
-                        <td>{{ $p->planting_year ?? '-' }}</td>
+                        <td>{{ $p->nama_kebun ?? $p->name }}</td>
+                        <td>{{ $p->lokasi ?? $p->regency ?? '-' }}</td>
+                        <td>{{ $p->luas_ha ?? $p->area_ha }}</td>
+                        <td>{{ \App\Models\Lahan::STATUS[$p->status_lahan ?? ''] ?? \App\Models\Plot::OWNERSHIP[$p->ownership_status ?? ''] ?? ($p->status_lahan ?? $p->ownership_status ?? '-') }}</td>
+                        <td>
+                            @if (! empty($p->polygon_coordinates) && count($p->polygon_coordinates) >= 3)
+                                <span class="chip ok">Ada ({{ count($p->polygon_coordinates) }} titik)</span>
+                            @else
+                                <span class="mut">Tidak ada</span>
+                            @endif
+                        </td>
                     </tr>
                 @empty
                     <tr><td colspan="5" class="mut">Belum ada lahan terdaftar.</td></tr>
