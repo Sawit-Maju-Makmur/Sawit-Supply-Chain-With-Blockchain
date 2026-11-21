@@ -34,3 +34,19 @@ select, input { font:inherit; }.version-bar select { border:1px solid var(--br);
 .btn { border:0; border-radius:7px; padding:10px 14px; cursor:pointer; font-weight:700; font-size:12px; }.btn-ghost { margin:15px 22px; color:var(--pr); background:var(--prs); }.btn-primary { color:#fff; background:var(--pr); }.btn-primary:disabled { cursor:not-allowed; opacity:.45; }
 .form-footer { display:flex; justify-content:flex-end; align-items:center; gap:14px; margin-top:22px; }.notes-input { margin-right:auto; width:270px; padding:10px; border:1px solid var(--br); border-radius:7px; background:#fff; }.alert { padding:13px 16px; border-radius:8px; margin-bottom:16px; }.alert.success { color:#fff; background:var(--side); }.alert.error { color:var(--er); background:var(--ers); }
 @media (max-width:760px) { .sidebar { display:none; }.main { width:100%; padding:28px 16px 50px; }.hd { gap:15px; flex-direction:column; }.version-bar, .form-footer { align-items:stretch; flex-direction:column; }.notes-input { width:100%; margin:0; } }
+
+/* === START PBI 17: Laporan Audit === */
+.audit-main { max-width:1120px; }
+.g4 { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:14px; margin-bottom:16px; }
+.stat { background:var(--card); border:1px solid var(--br); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:8px; }
+.stat span { color:var(--mut); font-size:12px; }.stat strong { font-size:25px; }
+.filters { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)) 1fr 1fr auto; align-items:end; gap:12px; padding:14px 16px; margin-bottom:16px; }
+.filters div { display:flex; flex-direction:column; gap:6px; }.filters label { color:var(--mut); font-size:11px; font-weight:700; }
+.filters input,.filters select { height:38px; width:100%; border:1px solid var(--br); border-radius:7px; padding:8px 10px; background:#fff; color:var(--tx); }
+.row2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.report-card { min-height:170px; }.report-actions { border-top:1px solid var(--br); padding:14px 22px; display:flex; gap:8px; justify-content:flex-end; }
+.btn.s { background:#fff; border:1px solid var(--br); color:var(--tx); text-decoration:none; display:inline-flex; align-items:center; }.btn.s.l { background:var(--prs); color:var(--pr); border-color:#b8d7c5; }
+.chip.wa { background:var(--was); color:var(--wa); }.preview-card { margin-top:16px; }.preview-card .wrap { border-radius:0 0 12px 12px; }.hash { max-width:220px; font-size:10px; word-break:break-all; }
+@media (max-width:900px) { .g4 { grid-template-columns:repeat(2,minmax(0,1fr)); }.filters { grid-template-columns:repeat(2,minmax(0,1fr)); }.row2 { grid-template-columns:1fr; }.filters .btn { grid-column:1/-1; } }
+@media (max-width:560px) { .g4,.filters { grid-template-columns:1fr; }.report-actions { justify-content:flex-start; flex-wrap:wrap; }.preview-card { overflow:hidden; } }
+/* === END PBI 17 === */
