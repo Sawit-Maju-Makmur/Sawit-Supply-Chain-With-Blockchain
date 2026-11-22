@@ -31,35 +31,19 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'phone'    => ['nullable', 'string', 'max:20'],
-            'address'  => ['nullable', 'string', 'max:500'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'phone'    => $request->phone,
-            'address'  => $request->address,
-            'role'     => 'pemasok',
+            'name' => $request->name,
+            'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
-        try {
-            $user->assignRole('pemasok');
-        } catch (\Throwable $e) {
-            // Spatie role table might not be seeded in testing
-        }
-
-        try {
-            $user->ensureSupplier();
-        } catch (\Throwable $e) {
-            // Safe fallback
-        }
-
         event(new Registered($user));
+
         Auth::login($user);
 
         return redirect(route('dashboard', absolute: false));

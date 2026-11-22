@@ -28,11 +28,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        $status = $request->user()->email_verified_at
-            ? 'Selamat datang kembali di SIPS Sawit.'
-            : 'Selamat datang! Email Anda belum diverifikasi, tetapi Anda tetap dapat masuk ke sistem. Silakan cek inbox email Anda untuk verifikasi.';
-
-        return redirect()->intended(route('dashboard', absolute: false))->with('status', $status);
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**
