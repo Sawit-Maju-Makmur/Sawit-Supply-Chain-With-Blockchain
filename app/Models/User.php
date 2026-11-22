@@ -15,7 +15,11 @@ class User extends Authenticatable implements MustVerifyEmail
 {
 
     /** @use HasFactory<UserFactory> */
+<<<<<<< HEAD
     use HasFactory, Notifiable, HasRoles;
+=======
+    use HasFactory, HasRoles, Notifiable;
+>>>>>>> f716e265f6a8063e242afe9c946d7b21e5255ca8
 
     /**
      * The attributes that are mass assignable.
@@ -27,7 +31,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'phone',
         'address',
+<<<<<<< HEAD
         'role',
+=======
+>>>>>>> f716e265f6a8063e242afe9c946d7b21e5255ca8
         'password',
     ];
 
