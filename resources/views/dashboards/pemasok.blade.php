@@ -1,4 +1,5 @@
 <x-app-layout title="Dashboard Pemasok">
+<div class="page-shell">
     <div class="dashboard-header">
         <div>
             <p class="eyebrow">Portal Pemasok</p>
@@ -14,13 +15,8 @@
     <div class="stats-grid">
         <article class="stat-card">
             <p class="stat-label">Lahan pemasok</p>
-            <p class="stat-value">{{ $plotCount }}</p>
+            <p class="stat-value">{{ $lahanCount }}</p>
             <div class="stat-meta">Lahan terdaftar di akun Anda</div>
-        </article>
-        <article class="stat-card">
-            <p class="stat-label">Peta lahan</p>
-            <p class="stat-value">{{ $landAreaCount }}</p>
-            <div class="stat-meta">Batas lahan tersimpan di akun Anda</div>
         </article>
         <article class="stat-card">
             <p class="stat-label">Dokumen</p>
@@ -68,13 +64,6 @@
                 </div>
                 <div class="action-item">
                     <div>
-                        <span class="action-name">Peta batas lahan</span>
-                        <span class="action-sub">Simpan poligon lahan pada akun Anda</span>
-                    </div>
-                    <a href="{{ route('land-areas.create') }}" class="pill-link">Buka</a>
-                </div>
-                <div class="action-item">
-                    <div>
                         <span class="action-name">Profil</span>
                         <span class="action-sub">Kelola data akun dan kontak</span>
                     </div>
@@ -86,53 +75,30 @@
         <aside class="action-card">
             <h2 class="card-title">Ringkasan akun</h2>
             <p style="margin:0; color:#475c53; line-height:1.7;">
-                Halo <strong>{{ auth()->user()->name }}</strong>, ringkasan ini menampilkan plot, peta lahan, dan dokumen yang terhubung dengan akun Anda.
-                @if (! $supplier)
-                    Data pemasok Anda belum ditautkan. Hubungi pengelola untuk menghubungkan akun dengan data pemasok.
-                @endif
+                Halo <strong>{{ auth()->user()->name }}</strong>, ringkasan ini menampilkan lahan dan dokumen
+                yang terhubung dengan akun Anda.
             </p>
         </aside>
     </div>
 
-    <div class="grid-panels" style="margin-top: 1.25rem;">
-        <section class="action-card">
-            <h2 class="card-title">Lahan terbaru</h2>
-            @if ($recentPlots->isEmpty())
-                <p style="margin:0; color:#475c53;">Belum ada lahan yang terhubung ke akun Anda.</p>
-            @else
-                <div class="action-list">
-                    @foreach ($recentPlots as $plot)
-                        <div class="action-item">
-                            <div>
-                                <span class="action-name">{{ $plot->nama_kebun ?? $plot->name }}</span>
-                                <span class="action-sub">{{ $plot->lokasi ?? $plot->regency ?? 'Kabupaten belum diisi' }} · {{ number_format((float) ($plot->luas_ha ?? $plot->area_ha), 2, ',', '.') }} ha</span>
-                            </div>
-                            <span class="action-sub">{{ \App\Models\Lahan::STATUS[$plot->status_lahan ?? ''] ?? \App\Models\Plot::OWNERSHIP[$plot->ownership_status ?? ''] ?? ($plot->status_lahan ?? $plot->ownership_status ?? '-') }}</span>
+    <section class="action-card" style="margin-top: 1.25rem;">
+        <h2 class="card-title">Lahan terbaru</h2>
+        @if ($recentLahans->isEmpty())
+            <p style="margin:0; color:#475c53;">Belum ada lahan yang terhubung ke akun Anda.</p>
+        @else
+            <div class="action-list">
+                @foreach ($recentLahans as $lahan)
+                    <div class="action-item">
+                        <div>
+                            <span class="action-name">{{ $lahan->nama_kebun }}</span>
+                            <span class="action-sub">{{ $lahan->lokasi ?: 'Lokasi belum diisi' }} · {{ number_format((float) $lahan->luas_ha, 2, ',', '.') }} ha</span>
                         </div>
-                    @endforeach
-                </div>
-            @endif
-        </section>
-
-        <aside class="action-card">
-            <h2 class="card-title">Peta lahan terbaru</h2>
-            @if ($recentLandAreas->isEmpty())
-                <p style="margin:0; color:#475c53;">Belum ada poligon lahan yang tersimpan di akun Anda.</p>
-            @else
-                <div class="action-list">
-                    @foreach ($recentLandAreas as $landArea)
-                        <div class="action-item">
-                            <div>
-                                <span class="action-name">{{ $landArea->name }}</span>
-                                <span class="action-sub">Diperbarui {{ $landArea->updated_at->diffForHumans() }}</span>
-                            </div>
-                            <span class="record-badge">{{ count($landArea->polygon_coordinates ?? []) }} titik</span>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-        </aside>
-    </div>
+                        <span class="action-sub">{{ \App\Models\Lahan::STATUS[$lahan->status_lahan] ?? $lahan->status_lahan }}</span>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </section>
 
     <section class="action-card" style="margin-top: 1.25rem;">
         <h2 class="card-title">Dokumen terbaru</h2>
@@ -152,4 +118,5 @@
             </div>
         @endif
     </section>
+</div>
 </x-app-layout>

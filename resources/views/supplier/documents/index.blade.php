@@ -13,6 +13,10 @@
                 <div class="alert mt-5" role="status">{{ session('success') }}</div>
             @endif
 
+            @if (session('error'))
+                <div class="alert mt-5" role="alert">{{ session('error') }}</div>
+            @endif
+
             @if ($errors->any())
                 <div class="alert mt-5" role="alert">
                     <ul class="list-disc pl-5">
@@ -43,9 +47,20 @@
                                             <p class="mt-1 text-sm text-rose-700">Catatan officer: {{ $document->review_notes }}</p>
                                         @endif
                                     </div>
-                                    @if ($document->file_path)
-                                        <a href="{{ route('pemasok.documents.download', $document) }}" class="text-sm font-semibold text-emerald-800 underline">Unduh {{ $document->original_filename ?: 'berkas' }}</a>
-                                    @endif
+                                    <div class="flex items-center gap-4">
+                                        @if ($document->file_path)
+                                            <a href="{{ route('pemasok.documents.download', $document) }}" class="text-sm font-semibold text-emerald-800 underline">Unduh {{ $document->original_filename ?: 'berkas' }}</a>
+                                        @endif
+
+                                        @if ($document->status !== 'approved')
+                                            <form method="POST" action="{{ route('pemasok.documents.destroy', $document) }}"
+                                                onsubmit="return confirm('Hapus dokumen ini? Berkas akan dihapus permanen.')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-sm font-semibold text-rose-700 underline">Hapus</button>
+                                            </form>
+                                        @endif
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
@@ -55,7 +70,12 @@
                         @csrf
                         <label class="text-sm font-medium">
                             Jenis dokumen
-                            <input name="type" value="{{ old('type') }}" required maxlength="100" placeholder="Contoh: ISPO, RSPO, SHM" class="mt-1 w-full rounded-xl border-slate-300">
+                            <select name="type" required class="mt-1 w-full rounded-xl border-slate-300">
+                                <option value="">Pilih jenis dokumen</option>
+                                @foreach (\App\Models\Document::TYPES as $value => $label)
+                                    <option value="{{ $value }}" @selected(old('type') === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
                         </label>
                         <label class="text-sm font-medium">
                             Tanggal kedaluwarsa (opsional)

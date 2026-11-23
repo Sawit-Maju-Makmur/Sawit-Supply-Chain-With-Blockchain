@@ -9,6 +9,18 @@ class Document extends Model
 {
     public const STATUSES = ['approved' => 'Disetujui', 'pending' => 'Menunggu', 'rejected' => 'Ditolak'];
 
+    public const TYPES = [
+        'SHM'     => 'SHM (Sertifikat Hak Milik)',
+        'HGU'     => 'HGU (Hak Guna Usaha)',
+        'HGB'     => 'HGB (Hak Guna Bangunan)',
+        'SKT'     => 'SKT / Girik',
+        'STDB'    => 'STDB (Surat Tanda Daftar Budidaya)',
+        'ISPO'    => 'ISPO',
+        'RSPO'    => 'RSPO',
+        'ISCC'    => 'ISCC',
+        'Lainnya' => 'Lainnya',
+    ];
+
     protected $fillable = [
         'lahan_id',
         'plot_id',

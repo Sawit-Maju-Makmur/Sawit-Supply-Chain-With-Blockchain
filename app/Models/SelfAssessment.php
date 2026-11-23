@@ -45,7 +45,56 @@ class SelfAssessment extends Model
      * @param  array<string,string>  $answers  contoh: ['tanpa_bakar' => 'ya']
      * @return array{total_score:int,max_score:int,percentage:float,level:string}
      */
+    
     public static function calculate(array $answers): array
+    {
+        $criteria = AssessmentCriterion::query()
+            ->where('is_active', true)
+            ->whereNotNull('question_key')
+            ->get()
+            ->groupBy('category');
+
+        // Tabel kriteria belum terisi: pakai perhitungan lama.
+        if ($criteria->isEmpty()) {
+            return self::calculateLegacy($answers);
+        }
+
+        $options = config('assessment.options');
+        $maxOption = max(array_column($options, 'score'));
+        $categoryPercentages = [];
+
+        foreach ($criteria as $items) {
+            $weightSum = (float) $items->sum('weight');
+            if ($weightSum <= 0) {
+                continue;
+            }
+
+            $earned = 0.0;
+            foreach ($items as $criterion) {
+                $score = $options[$answers[$criterion->question_key] ?? 'tidak']['score'] ?? 0;
+                $earned += (float) $criterion->weight * ($score / $maxOption);
+            }
+
+            $categoryPercentages[] = $earned / $weightSum * 100;
+        }
+
+        if ($categoryPercentages === []) {
+            return self::calculateLegacy($answers);
+        }
+
+        // Skor akhir = rata-rata persentase tiap kategori (50:50).
+        $percentage = round(array_sum($categoryPercentages) / count($categoryPercentages), 2);
+
+        return [
+            'total_score' => (int) round($percentage),
+            'max_score'   => 100,
+            'percentage'  => $percentage,
+            'level'       => self::levelFor($percentage)['label'],
+        ];
+    }
+
+    
+    public static function calculateLegacy(array $answers): array
     {
         $options = config('assessment.options');
         $total = 0;

@@ -17,6 +17,7 @@ class AssessmentCriterion extends Model
 
     protected $fillable = [
         'category',
+        'question_key',
         'name',
         'description',
         'regulatory_reference',

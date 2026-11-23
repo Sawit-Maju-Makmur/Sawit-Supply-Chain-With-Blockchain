@@ -19,9 +19,9 @@
             <div class="stat-meta">Status aktif dengan sertifikasi valid</div>
         </article>
         <article class="stat-card">
-            <p class="stat-label">Plot</p>
-            <p class="stat-value">{{ $plotCount }}</p>
-            <div class="stat-meta">Plot terhubung ke pemasok</div>
+            <p class="stat-label">Lahan</p>
+            <p class="stat-value">{{ $lahanCount }}</p>
+            <div class="stat-meta">Lahan terhubung ke pemasok</div>
         </article>
         <article class="stat-card">
             <p class="stat-label">Dokumen menunggu</p>

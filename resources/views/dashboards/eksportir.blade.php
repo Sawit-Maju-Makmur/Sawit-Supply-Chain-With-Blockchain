@@ -19,9 +19,9 @@
             <div class="stat-meta">Dokumen belum disetujui</div>
         </article>
         <article class="stat-card">
-            <p class="stat-label">Plot</p>
-            <p class="stat-value">{{ $plotCount }}</p>
-            <div class="stat-meta">Plot pemasok terdaftar</div>
+            <p class="stat-label">Lahan</p>
+            <p class="stat-value">{{ $lahanCount }}</p>
+            <div class="stat-meta">Lahan pemasok terdaftar</div>
         </article>
         <article class="stat-card">
             <p class="stat-label">Pemasok aktif</p>

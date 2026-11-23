@@ -18,7 +18,7 @@ class Lahan extends Model
     ];
 
     protected $fillable = [
-        'supplier_id', 'nama_pemasok', 'nama_kebun', 'lokasi', 'latitude', 'longitude',
+        'supplier_id', 'nama_kebun', 'lokasi', 'latitude', 'longitude',
         'luas_ha', 'status_lahan', 'no_dokumen', 'keterangan', 'polygon_coordinates',
     ];
 

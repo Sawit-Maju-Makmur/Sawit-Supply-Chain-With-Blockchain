@@ -46,7 +46,7 @@ class SupplierDocumentController extends Controller
             'type' => $validated['type'],
             'expires_at' => $validated['expires_at'] ?? null,
             'file_path' => $path,
-            'original_filename' => $file->getClientOriginalName(),
+            'original_filename' => mb_substr($file->getClientOriginalName(), -255),
             'status' => 'pending',
         ]);
 

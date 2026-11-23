@@ -17,12 +17,11 @@ class LahanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nama_pemasok' => 'nullable|string|max:255',
             'nama_kebun'   => 'required|string|max:255',
             'lokasi'       => 'required|string|max:255',
             'latitude'     => 'nullable|numeric|between:-90,90',
             'longitude'    => 'nullable|numeric|between:-180,180',
-            'luas_ha'      => 'required|numeric|min:0.01',
+            'luas_ha'      => 'required|numeric|min:0.01|max:100000',
             'status_lahan' => ['required', Rule::in(array_keys(Lahan::STATUS))],
             'no_dokumen'   => 'nullable|string|max:255',
             'keterangan'   => 'nullable|string',

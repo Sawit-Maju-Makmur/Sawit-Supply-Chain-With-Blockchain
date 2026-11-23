@@ -1,138 +1,92 @@
 <?php
 
-namespace App\Http\Controllers\Management;
+namespace App\Http\Controllers\Supplier;
 
 use App\Http\Controllers\Controller;
-use App\Http\Middleware\EnsureUserHasRole;
-use App\Http\Requests\Management\UpdateSupplierStatusRequest;
 use App\Models\Document;
+use App\Models\Lahan;
 use App\Models\Supplier;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
+use RuntimeException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Validation\Rule; 
 
-class SupplierController extends Controller
+class SupplierDocumentController extends Controller
 {
-    private function filtered(Request $request)
+    public function index(Request $request): View
     {
-        return Supplier::query()
-            ->search($request->query('q'))
-            ->ofType($request->query('type'))
-            ->ofStatus($request->query('status'));
+        $supplier = $request->user()->ensureSupplier();
+        $lahans = $supplier->lahans()->with('documents')->latest()->get();
+
+        return view('supplier.documents.index', compact('supplier', 'lahans'));
     }
 
-    private function canManage(Request $request): bool
+    public function store(Request $request, Lahan $lahan): RedirectResponse
     {
-        return EnsureUserHasRole::roleOf($request->user()) === 'management'
-            || (method_exists($request->user(), 'hasRole') && $request->user()->hasRole('management'));
-    }
+        $supplier = $request->user()->ensureSupplier();
+        abort_unless($lahan->supplier_id === $supplier->id, 404);
 
-    // AC1 dan AC2: daftar pemasok dengan pencarian, filter, dan pagination
-    public function index(Request $request)
-    {
-        $suppliers = $this->filtered($request)
-            ->withCount(['lahans', 'plots'])
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->paginate(10)
-            ->withQueryString();
-
-        return view('management.suppliers.index', [
-            'suppliers' => $suppliers,
-            'types' => Supplier::TYPES,
-            'statuses' => Supplier::STATUSES,
-            'filters' => array_filter($request->only('q', 'type', 'status')),
-            'canManage' => $this->canManage($request),
+        $validated = $request->validate([
+            'type' => ['required', Rule::in(array_keys(Document::TYPES))],
+            'expires_at' => ['nullable', 'date'],
+            'file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
         ]);
-    }
 
-    // AC3: detail pemasok (data, lahan, ringkasan dokumen, riwayat status)
-    public function show(Request $request, Supplier $supplier)
-    {
-        $supplier->load(['lahans.documents', 'plots.documents', 'statusLogs.actor', 'latestSelfAssessment']);
-        $hasValidCertification = $supplier->hasValidCertification();
-
-        $documentSummary = Document::query()
-            ->where(function ($q) use ($supplier) {
-                $q->whereIn('lahan_id', $supplier->lahans()->select('lahans.id'))
-                  ->orWhereIn('plot_id', $supplier->plots()->select('plots.id'));
-            })
-            ->selectRaw('status, COUNT(*) as total')
-            ->groupBy('status')
-            ->pluck('total', 'status');
-
-        return view('management.suppliers.show', [
-            'supplier' => $supplier,
-            'documentSummary' => $documentSummary,
-            'canManage' => $this->canManage($request),
-            'hasValidCertification' => $hasValidCertification,
-        ]);
-    }
-
-    // AC4: aktifkan atau nonaktifkan pemasok, alasan wajib saat menonaktifkan, tercatat di log
-    public function updateStatus(UpdateSupplierStatusRequest $request, Supplier $supplier)
-    {
-        $new = $request->validated('status');
-
-        if ($supplier->status === $new) {
-            return back()->with('error', 'Pemasok sudah berstatus '.strtolower(Supplier::STATUSES[$new]).'.');
+        $file = $request->file('file');
+        $path = $file->store('legal-documents/'.$supplier->id, 'local');
+        if (! $path) {
+            throw new RuntimeException('Berkas legalitas gagal disimpan.');
         }
 
-        if ($new === Supplier::STATUS_ACTIVE && ! $supplier->hasValidCertification()) {
-            return back()->with('error', 'Pemasok belum dapat diaktifkan karena semua dokumen legalitas harus disetujui dan belum kedaluwarsa.');
+        $lahan->documents()->create([
+            'type' => $validated['type'],
+            'expires_at' => $validated['expires_at'] ?? null,
+            'file_path' => $path,
+            'original_filename' => $file->getClientOriginalName(),
+            'status' => 'pending',
+        ]);
+
+        return redirect()->route('pemasok.documents.index')
+            ->with('success', 'Dokumen berhasil dikirim dan menunggu pemeriksaan.');
+    }
+
+    public function download(Request $request, Document $document): StreamedResponse
+    {
+        $supplier = $request->user()->ensureSupplier();
+        abort_unless($this->ownedBy($document, $supplier), 404);
+        abort_unless($document->file_path && Storage::disk('local')->exists($document->file_path), 404);
+
+        return Storage::disk('local')->download(
+            $document->file_path,
+            basename($document->original_filename ?: $document->file_path),
+        );
+    }
+
+    public function destroy(Request $request, Document $document): RedirectResponse
+    {
+        $supplier = $request->user()->ensureSupplier();
+        abort_unless($this->ownedBy($document, $supplier), 404);
+
+        if ($document->status === 'approved') {
+            return back()->with('error', 'Dokumen yang sudah disetujui tidak dapat dihapus.');
         }
 
-        $reason = $request->validated('reason');
+        $path = $document->file_path;
+        $document->delete();
 
-        DB::transaction(function () use ($supplier, $new, $reason, $request) {
-            $from = $supplier->status;
+        if ($path) {
+            Storage::disk('local')->delete($path);
+        }
 
-            $supplier->update([
-                'status' => $new,
-                'deactivation_reason' => $new === Supplier::STATUS_INACTIVE ? $reason : null,
-                'deactivated_at' => $new === Supplier::STATUS_INACTIVE ? now() : null,
-            ]);
-
-            $supplier->statusLogs()->create([
-                'user_id' => $request->user()->id,
-                'from_status' => $from,
-                'to_status' => $new,
-                'reason' => $reason,
-            ]);
-        });
-
-        return back()->with('success', $new === Supplier::STATUS_ACTIVE
-            ? 'Pemasok berhasil diaktifkan.'
-            : 'Pemasok berhasil dinonaktifkan dan tercatat di riwayat.');
+        return back()->with('success', 'Dokumen dihapus. Silakan unggah dokumen pengganti.');
     }
 
-    // AC6: export mengikuti filter yang sedang dipakai (CSV pemisah titik koma, terbuka di Excel)
-    public function export(Request $request)
+    private function ownedBy(Document $document, Supplier $supplier): bool
     {
-        $query = $this->filtered($request)->withCount(['lahans', 'plots'])->orderBy('name');
-        $filename = 'data-pemasok-'.now()->format('Ymd-His').'.csv';
-
-        return response()->streamDownload(function () use ($query) {
-            $out = fopen('php://output', 'w');
-            fwrite($out, "\xEF\xBB\xBF"); // BOM agar Excel membaca UTF-8
-            fputcsv($out, ['Nama', 'Tipe', 'Kabupaten', 'Jumlah lahan', 'Status', 'Email', 'Telepon', 'Tanggal daftar'], ';');
-
-            foreach ($query->cursor() as $s) {
-                $lahanCount = ($s->lahans_count ?? 0) > 0 ? $s->lahans_count : ($s->plots_count ?? 0);
-                fputcsv($out, array_map([$this, 'safe'], [
-                    $s->name, $s->type_label, $s->regency, $lahanCount,
-                    $s->status_label, $s->email, $s->phone, optional($s->created_at)->format('d/m/Y'),
-                ]), ';');
-            }
-            fclose($out);
-        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
-    }
-
-    /** Cegah CSV injection: sel yang diawali = + - @ diberi tanda petik. */
-    private function safe($value): string
-    {
-        $value = (string) $value;
-
-        return preg_match('/^[=+\-@\t\r]/', $value) ? "'".$value : $value;
+        return $document->lahan?->supplier_id === $supplier->id
+            || $document->plot?->supplier_id === $supplier->id;
     }
 }
-

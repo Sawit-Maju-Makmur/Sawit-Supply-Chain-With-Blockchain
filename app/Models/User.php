@@ -15,11 +15,9 @@ class User extends Authenticatable implements MustVerifyEmail
 {
 
     /** @use HasFactory<UserFactory> */
-<<<<<<< HEAD
+
     use HasFactory, Notifiable, HasRoles;
-=======
-    use HasFactory, HasRoles, Notifiable;
->>>>>>> f716e265f6a8063e242afe9c946d7b21e5255ca8
+
 
     /**
      * The attributes that are mass assignable.
@@ -31,10 +29,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'phone',
         'address',
-<<<<<<< HEAD
-        'role',
-=======
->>>>>>> f716e265f6a8063e242afe9c946d7b21e5255ca8
         'password',
     ];
 
@@ -68,11 +62,20 @@ class User extends Authenticatable implements MustVerifyEmail
             return $supplier;
         }
 
-        if ($this->email) {
-            $supplier = Supplier::where('email', $this->email)->first();
-            if ($supplier) {
-                $supplier->update(['user_id' => $this->id]);
-                return $supplier;
+        // Tautkan data lama berdasarkan email hanya jika email user sudah terverifikasi
+        // DAN supplier tersebut belum dimiliki akun lain.
+        if ($this->email && $this->hasVerifiedEmail()) {
+            $legacy = Supplier::where('email', $this->email)->whereNull('user_id')->first();
+
+            if ($legacy) {
+                $claimed = Supplier::query()
+                    ->whereKey($legacy->getKey())
+                    ->whereNull('user_id')
+                    ->update(['user_id' => $this->id]);
+
+                if ($claimed) {
+                    return $legacy->refresh();
+                }
             }
         }
 
@@ -87,24 +90,5 @@ class User extends Authenticatable implements MustVerifyEmail
         ]);
     }
 
-    public function getRoleAttribute(): ?string
-    {
-        if (! empty($this->attributes['role'])) {
-            return $this->attributes['role'];
-        }
-
-        if (method_exists($this, 'getRoleNames')) {
-            try {
-                $roleName = $this->getRoleNames()->first();
-                if ($roleName) {
-                    return $roleName;
-                }
-            } catch (\Throwable $e) {
-                // Ignore if Spatie tables are not migrated yet
-            }
-        }
-
-        return null;
-    }
 }
 

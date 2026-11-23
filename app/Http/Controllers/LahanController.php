@@ -26,7 +26,6 @@ class LahanController extends Controller
         $supplier = $request->user()->ensureSupplier();
         $attributes = $this->validatedAttributes($request);
         $attributes['supplier_id'] = $supplier->id;
-        $attributes['nama_pemasok'] = $supplier->name ?: ($request->input('nama_pemasok') ?: 'Pemasok');
 
         $supplier->lahans()->create($attributes);
 
@@ -56,7 +55,6 @@ class LahanController extends Controller
 
         $attributes = $this->validatedAttributes($request);
         $attributes['supplier_id'] = $supplier->id;
-        $attributes['nama_pemasok'] = $supplier->name ?: ($request->input('nama_pemasok') ?: 'Pemasok');
 
         $lahan->update($attributes);
 
