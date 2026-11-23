@@ -144,129 +144,136 @@ class AuditReportController extends Controller
     {
         $rows = $this->readTable(
             ['suppliers', 'pemasoks', 'pemasok', 'supplier'],
-            ['name', 'nama', 'supplier_name', 'nama_pemasok'],
-            'fallback_suppliers'
+            ['name', 'nama', 'supplier_name', 'nama_pemasok']
         );
 
         $result = [];
         foreach ($rows as $row) {
-            $name = $this->value($row, ['name', 'nama', 'supplier_name', 'nama_pemasok'], 'PT Agro Sejahtera');
-            $type = $this->normalizeType($this->value($row, ['type', 'tipe', 'supplier_type', 'tipe_pemasok'], 'Perusahaan'));
+            $name = $this->value($row, ['name', 'nama', 'supplier_name', 'nama_pemasok'], '');
+            if ($name === '' || $name === null) continue;
+            $type = $this->normalizeType($this->value($row, ['type', 'tipe', 'supplier_type', 'tipe_pemasok'], ''));
             if (!$this->matchType($type, $filters['supplier_type'])) continue;
-            $landCount = (int) $this->value($row, ['land_count', 'jumlah_lahan', 'total_land', 'lahan_count'], 3);
-            $area = (float) $this->value($row, ['land_area', 'luas_lahan', 'area_ha', 'luas_ha'], 48);
-            $active = $this->value($row, ['account_status', 'status_akun', 'is_active', 'active'], 'Aktif');
+            $landCount = (int) $this->value($row, ['land_count', 'jumlah_lahan', 'total_land', 'lahan_count'], 0);
+            $area = (float) $this->value($row, ['land_area', 'luas_lahan', 'area_ha', 'luas_ha'], 0);
+            $active = $this->value($row, ['account_status', 'status_akun', 'is_active', 'active'], '');
             $status = filter_var($active, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) === false ? 'Nonaktif' : 'Aktif';
             if (is_string($active) && in_array(strtolower($active), ['aktif', 'active', 'enabled'], true)) $status = 'Aktif';
             if (is_string($active) && in_array(strtolower($active), ['nonaktif', 'inactive', 'disabled'], true)) $status = 'Nonaktif';
-            $complete = $this->value($row, ['document_completeness', 'kelengkapan_dokumen', 'document_status'], 'Lengkap');
+            $complete = $this->value($row, ['document_completeness', 'kelengkapan_dokumen', 'document_status'], '');
 
             $result[] = [
                 'name' => $name,
                 'type' => $type,
-                'regency' => $this->value($row, ['regency', 'kabupaten', 'district', 'kabupaten_kota'], 'Kabupaten Kutai Barat'),
+                'regency' => $this->value($row, ['regency', 'kabupaten', 'district', 'kabupaten_kota'], ''),
                 'lands' => $landCount,
                 'area' => number_format($area, 2, '.', ''),
                 'account_status' => $status,
                 'documents' => $complete,
             ];
         }
-        return $result ?: $this->fallbackSuppliers($filters);
+        return $result;
     }
 
     private function loadSustainability(array $filters): array
     {
         $rows = $this->readTable(
             ['sustainability_assessments', 'supplier_assessments', 'sustainability_scores', 'assessment_results', 'evaluations'],
-            ['supplier_name', 'nama_pemasok', 'supplier_id'],
-            'fallback_sustainability'
+            ['supplier_name', 'nama_pemasok', 'supplier_id']
         );
         $result = [];
         foreach ($rows as $row) {
-            $name = $this->value($row, ['supplier_name', 'nama_pemasok', 'name', 'nama'], 'PT Agro Sejahtera');
-            $type = $this->normalizeType($this->value($row, ['supplier_type', 'tipe_pemasok', 'type'], 'Perusahaan'));
+            $name = $this->value($row, ['supplier_name', 'nama_pemasok', 'name', 'nama'], '');
+            if ($name === '' || $name === null) continue;
+            $type = $this->normalizeType($this->value($row, ['supplier_type', 'tipe_pemasok', 'type'], ''));
             if (!$this->matchType($type, $filters['supplier_type'])) continue;
-            $score = (int) $this->value($row, ['score', 'skor', 'total_score', 'nilai'], 82);
-            $category = $this->normalizeCategory($this->value($row, ['category', 'kategori'], $score >= 70 ? 'Hijau' : ($score >= 40 ? 'Kuning' : 'Merah')));
+            $scoreValue = $this->value($row, ['score', 'skor', 'total_score', 'nilai'], null);
+            if (!is_numeric($scoreValue)) continue;
+            $score = (int) $scoreValue;
+            $categoryValue = $this->value($row, ['category', 'kategori'], null);
+            $category = $categoryValue === null || $categoryValue === ''
+                ? ($score >= 70 ? 'Hijau' : ($score >= 40 ? 'Kuning' : 'Merah'))
+                : $this->normalizeCategory($categoryValue);
             if ($filters['category'] !== 'Semua' && $category !== $filters['category']) continue;
-            $date = $this->value($row, ['verified_at', 'verification_date', 'tanggal_verifikasi', 'evaluated_at', 'created_at'], date('Y-m-d'));
+            $date = $this->value($row, ['verified_at', 'verification_date', 'tanggal_verifikasi', 'evaluated_at', 'created_at'], '');
+            if ($date === '' || $date === null) continue;
             if (!$this->matchDate($date, $filters)) continue;
 
             $result[] = [
                 'name' => $name,
-                'version' => $this->value($row, ['criteria_version', 'version', 'versi', 'assessment_version'], 'v1'),
+                'version' => $this->value($row, ['criteria_version', 'version', 'versi', 'assessment_version'], ''),
                 'score' => max(0, min(100, $score)),
                 'category' => $category,
-                'eligibility' => $this->normalizeEligibility($this->value($row, ['operating_eligibility', 'kelayakan', 'eligibility', 'operating_status'], 'Ya')),
+                'eligibility' => $this->normalizeEligibility($this->value($row, ['operating_eligibility', 'kelayakan', 'eligibility', 'operating_status'], '')),
                 'verified_at' => $this->formatDate($date),
             ];
         }
-        return $result ?: $this->fallbackSustainability($filters);
+        return $result;
     }
 
     private function loadTraceability(array $filters): array
     {
         $rows = $this->readTable(
             ['traceability_batches', 'batches', 'tbs_batches', 'shipment_batches'],
-            ['batch_code', 'kode_batch', 'code'],
-            'fallback_traceability'
+            ['batch_code', 'kode_batch', 'code']
         );
         $result = [];
         foreach ($rows as $row) {
-            $name = $this->value($row, ['supplier_name', 'nama_pemasok', 'supplier'], 'PT Agro Sejahtera');
-            $type = $this->normalizeType($this->value($row, ['supplier_type', 'tipe_pemasok', 'type'], 'Perusahaan'));
+            $name = $this->value($row, ['supplier_name', 'nama_pemasok', 'supplier'], '');
+            $type = $this->normalizeType($this->value($row, ['supplier_type', 'tipe_pemasok', 'type'], ''));
             if (!$this->matchType($type, $filters['supplier_type'])) continue;
-            $date = $this->value($row, ['shipment_date', 'received_at', 'tanggal_pengiriman', 'created_at'], date('Y-m-d'));
+            $date = $this->value($row, ['shipment_date', 'received_at', 'tanggal_pengiriman', 'created_at'], '');
+            if ($date === '' || $date === null) continue;
             if (!$this->matchDate($date, $filters)) continue;
-            $integrity = $this->normalizeIntegrity($this->value($row, ['integrity_status', 'status_integritas', 'integrity'], 'Valid'));
+            $integrity = $this->normalizeIntegrity($this->value($row, ['integrity_status', 'status_integritas', 'integrity'], ''));
 
             $result[] = [
-                'batch' => $this->value($row, ['batch_code', 'kode_batch', 'code'], 'BATCH-2026-001'),
+                'batch' => $this->value($row, ['batch_code', 'kode_batch', 'code'], ''),
                 'supplier' => $name,
-                'land' => $this->value($row, ['land_block', 'lahan_blok', 'land', 'block'], 'Blok A-01'),
-                'regency' => $this->value($row, ['regency', 'kabupaten'], 'Kabupaten Kutai Barat'),
-                'commodity' => $this->value($row, ['commodity', 'komoditas'], 'TBS Kelapa Sawit'),
-                'weight' => (float) $this->value($row, ['weight_kg', 'berat_kg', 'weight'], 2450),
-                'shipment_status' => $this->value($row, ['shipment_status', 'status_pengiriman'], 'Dikirim'),
-                'mill_status' => $this->value($row, ['mill_status', 'received_status', 'status_penerimaan'], 'Diterima'),
-                'hash' => $this->value($row, ['ledger_hash', 'hash_sha256', 'hash'], hash('sha256', $name . date('Y-m-d'))),
+                'land' => $this->value($row, ['land_block', 'lahan_blok', 'land', 'block'], ''),
+                'regency' => $this->value($row, ['regency', 'kabupaten'], ''),
+                'commodity' => $this->value($row, ['commodity', 'komoditas'], ''),
+                'weight' => (float) $this->value($row, ['weight_kg', 'berat_kg', 'weight'], 0),
+                'shipment_status' => $this->value($row, ['shipment_status', 'status_pengiriman'], ''),
+                'mill_status' => $this->value($row, ['mill_status', 'received_status', 'status_penerimaan'], ''),
+                'hash' => $this->value($row, ['ledger_hash', 'hash_sha256', 'hash'], ''),
                 'integrity' => $integrity,
             ];
         }
-        return $result ?: $this->fallbackTraceability($filters);
+        return $result;
     }
 
     private function loadExpiry(array $filters): array
     {
         $rows = $this->readTable(
             ['supplier_documents', 'documents', 'pemasok_documents', 'document_expiry'],
-            ['document_type', 'jenis_dokumen', 'type'],
-            'fallback_expiry'
+            ['document_type', 'jenis_dokumen', 'type']
         );
         $result = [];
         foreach ($rows as $row) {
-            $name = $this->value($row, ['supplier_name', 'nama_pemasok', 'name', 'nama'], 'PT Agro Sejahtera');
-            $type = $this->normalizeType($this->value($row, ['supplier_type', 'tipe_pemasok', 'type_supplier'], 'Perusahaan'));
+            $name = $this->value($row, ['supplier_name', 'nama_pemasok', 'name', 'nama'], '');
+            if ($name === '' || $name === null) continue;
+            $type = $this->normalizeType($this->value($row, ['supplier_type', 'tipe_pemasok', 'type_supplier'], ''));
             if (!$this->matchType($type, $filters['supplier_type'])) continue;
-            $expiry = $this->value($row, ['expiry_date', 'tanggal_kedaluwarsa', 'expires_at', 'expired_at'], now()->addDays(45)->format('Y-m-d'));
+            $expiry = $this->value($row, ['expiry_date', 'tanggal_kedaluwarsa', 'expires_at', 'expired_at'], '');
+            if ($expiry === '' || $expiry === null) continue;
             if (!$this->matchDate($expiry, $filters)) continue;
             $days = (int) ceil((strtotime($expiry) - strtotime(date('Y-m-d'))) / 86400);
             if ($days > 90) continue;
 
             $result[] = [
                 'name' => $name,
-                'document_type' => strtoupper($this->value($row, ['document_type', 'jenis_dokumen', 'type'], 'ISPO')),
-                'document_number' => $this->value($row, ['document_number', 'nomor_dokumen', 'number'], 'ISPO-2025-001'),
-                'land' => $this->value($row, ['land', 'lahan', 'land_block', 'lahan_blok'], 'Blok A-01'),
+                'document_type' => strtoupper($this->value($row, ['document_type', 'jenis_dokumen', 'type'], '')),
+                'document_number' => $this->value($row, ['document_number', 'nomor_dokumen', 'number'], ''),
+                'land' => $this->value($row, ['land', 'lahan', 'land_block', 'lahan_blok'], ''),
                 'expiry_date' => $this->formatDate($expiry),
                 'remaining_days' => $days,
                 'status' => $days < 0 ? 'Kedaluwarsa' : 'Segera Berakhir',
             ];
         }
-        return $result ?: $this->fallbackExpiry($filters);
+        return $result;
     }
 
-    private function readTable(array $tables, array $preferredColumns, string $fallbackKey): array
+    private function readTable(array $tables, array $preferredColumns): array
     {
         foreach ($tables as $table) {
             if (!Schema::hasTable($table)) continue;
@@ -285,56 +292,6 @@ class AuditReportController extends Controller
             }
         }
         return [];
-    }
-
-    private function fallbackSuppliers(array $filters): array
-    {
-        $all = [
-            ['name'=>'PT Agro Sejahtera','type'=>'Perusahaan','regency'=>'Kabupaten Kutai Barat','lands'=>3,'area'=>'48.20','account_status'=>'Aktif','documents'=>'Lengkap'],
-            ['name'=>'Koperasi Plasma Mandiri','type'=>'Plasma','regency'=>'Kabupaten Musi Banyuasin','lands'=>18,'area'=>'92.75','account_status'=>'Aktif','documents'=>'Hampir Lengkap'],
-            ['name'=>'UD Sawit Mandiri','type'=>'Mandiri','regency'=>'Kabupaten Bengkulu Utara','lands'=>2,'area'=>'12.40','account_status'=>'Nonaktif','documents'=>'Belum Lengkap'],
-        ];
-        return array_values(array_filter($all, fn ($row) => $this->matchType($row['type'], $filters['supplier_type'])));
-    }
-
-    private function fallbackSustainability(array $filters): array
-    {
-        $all = [
-            ['name'=>'PT Agro Sejahtera','version'=>'v2','score'=>82,'category'=>'Hijau','eligibility'=>'Ya','verified_at'=>date('Y-m-d')],
-            ['name'=>'Koperasi Plasma Mandiri','version'=>'v2','score'=>58,'category'=>'Kuning','eligibility'=>'Bersyarat','verified_at'=>date('Y-m-d', strtotime('-12 days'))],
-            ['name'=>'UD Sawit Mandiri','version'=>'v1','score'=>34,'category'=>'Merah','eligibility'=>'Tidak','verified_at'=>date('Y-m-d', strtotime('-28 days'))],
-        ];
-        return array_values(array_filter($all, function ($row) use ($filters) {
-            $type = $row['name'] === 'PT Agro Sejahtera' ? 'Perusahaan' : ($row['name'] === 'UD Sawit Mandiri' ? 'Mandiri' : 'Plasma');
-            return $this->matchType($type, $filters['supplier_type'])
-                && ($filters['category'] === 'Semua' || $row['category'] === $filters['category']);
-        }));
-    }
-
-    private function fallbackTraceability(array $filters): array
-    {
-        $all = [
-            ['batch'=>'BATCH-2026-001','supplier'=>'PT Agro Sejahtera','land'=>'Blok A-01','regency'=>'Kabupaten Kutai Barat','commodity'=>'TBS Kelapa Sawit','weight'=>2450,'shipment_status'=>'Dikirim','mill_status'=>'Diterima','hash'=>hash('sha256','SIPS-SA-2026-001'),'integrity'=>'Valid'],
-            ['batch'=>'BATCH-2026-018','supplier'=>'Koperasi Plasma Mandiri','land'=>'Blok P-07','regency'=>'Kabupaten Musi Banyuasin','commodity'=>'TBS Kelapa Sawit','weight'=>1880,'shipment_status'=>'Dikirim','mill_status'=>'Diterima','hash'=>hash('sha256','SIPS-PL-2026-018'),'integrity'=>'Valid'],
-            ['batch'=>'BATCH-2026-023','supplier'=>'UD Sawit Mandiri','land'=>'Blok M-03','regency'=>'Kabupaten Bengkulu Utara','commodity'=>'TBS Kelapa Sawit','weight'=>920,'shipment_status'=>'Dalam Proses','mill_status'=>'Belum Diterima','hash'=>hash('sha256','SIPS-MD-2026-023'),'integrity'=>'Rusak'],
-        ];
-        return array_values(array_filter($all, function ($row) use ($filters) {
-            $type = $row['supplier'] === 'PT Agro Sejahtera' ? 'Perusahaan' : ($row['supplier'] === 'UD Sawit Mandiri' ? 'Mandiri' : 'Plasma');
-            return $this->matchType($type, $filters['supplier_type']);
-        }));
-    }
-
-    private function fallbackExpiry(array $filters): array
-    {
-        $all = [
-            ['name'=>'PT Agro Sejahtera','document_type'=>'ISPO','document_number'=>'ISPO-2025-001','land'=>'Blok A-01','expiry_date'=>now()->addDays(42)->format('Y-m-d'),'remaining_days'=>42,'status'=>'Segera Berakhir'],
-            ['name'=>'Koperasi Plasma Mandiri','document_type'=>'STDB','document_number'=>'STDB-2024-118','land'=>'Blok P-07','expiry_date'=>now()->addDays(75)->format('Y-m-d'),'remaining_days'=>75,'status'=>'Segera Berakhir'],
-            ['name'=>'UD Sawit Mandiri','document_type'=>'SHM','document_number'=>'SHM-00991','land'=>'Blok M-03','expiry_date'=>now()->subDays(8)->format('Y-m-d'),'remaining_days'=>-8,'status'=>'Kedaluwarsa'],
-        ];
-        return array_values(array_filter($all, function ($row) use ($filters) {
-            $type = $row['name'] === 'PT Agro Sejahtera' ? 'Perusahaan' : ($row['name'] === 'UD Sawit Mandiri' ? 'Mandiri' : 'Plasma');
-            return $this->matchType($type, $filters['supplier_type']);
-        }));
     }
 
     private function value(object|array $row, array $keys, mixed $default = null): mixed
