@@ -5,6 +5,7 @@ use App\Http\Controllers\LandAreaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SelfAssessmentController;
+use App\Http\Controllers\Supplier\HarvestController;
 use App\Http\Controllers\Supplier\SupplierDocumentController;
 use App\Http\Controllers\Supplier\SupplierProfileController;
 use App\Http\Middleware\EnsureUserHasRole;
@@ -57,7 +58,16 @@ Route::middleware(['auth', 'role:pemasok'])->group(function () {
     Route::post('/pemasok/self-assessment', [SelfAssessmentController::class, 'store'])->name('assessments.store');
     Route::get('/pemasok/self-assessment/{assessment}', [SelfAssessmentController::class, 'show'])->name('assessments.show');
     Route::delete('/pemasok/self-assessment/{assessment}', [SelfAssessmentController::class, 'destroy'])->name('assessments.destroy');
+
+    // ── Hasil Panen & QR Code Blockchain ────────────────────────────────────
+    Route::get('/pemasok/panen', [HarvestController::class, 'index'])->name('pemasok.harvests.index');
+    Route::get('/pemasok/panen/baru', [HarvestController::class, 'create'])->name('pemasok.harvests.create');
+    Route::post('/pemasok/panen', [HarvestController::class, 'store'])->name('pemasok.harvests.store');
+    Route::get('/pemasok/panen/{harvest}', [HarvestController::class, 'show'])->name('pemasok.harvests.show');
 });
+
+// ── Verifikasi QR Code (publik, tanpa login) ─────────────────────────────────
+Route::get('/verifikasi-panen/{token}', [HarvestController::class, 'verify'])->name('harvest.verify');
 
 Route::resource('land-areas', LandAreaController::class)->only(['create', 'store']);
 

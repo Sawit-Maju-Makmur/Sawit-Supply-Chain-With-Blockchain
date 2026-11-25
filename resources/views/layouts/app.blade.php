@@ -382,6 +382,7 @@
                         <a class="nav-link" href="{{ route('lahan.index') }}">Lahan</a>
                         <a class="nav-link" href="{{ route('pemasok.documents.index') }}">Dokumen</a>
                         <a class="nav-link" href="{{ route('assessments.index') }}">Self-Assessment</a>
+                        <a class="nav-link" href="{{ route('pemasok.harvests.index') }}">Hasil Panen 🌾</a>
                     @endif
                     @if (auth()->user()->role === 'management' || auth()->user()->role === 'sustainability_officer' || (method_exists(auth()->user(), 'hasRole') && (auth()->user()->hasRole('management') || auth()->user()->hasRole('sustainability_officer'))))
                         <a class="nav-link" href="{{ route('management.suppliers.index') }}">Data Pemasok</a>

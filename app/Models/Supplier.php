@@ -55,6 +55,11 @@ class Supplier extends Model
         return $this->hasMany(SelfAssessment::class);
     }
 
+    public function harvests(): HasMany
+    {
+        return $this->hasMany(Harvest::class);
+    }
+
     public function latestSelfAssessment(): HasOne
     {
         return $this->hasOne(SelfAssessment::class)->latestOfMany();

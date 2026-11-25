@@ -75,6 +75,13 @@
                 </div>
                 <div class="action-item">
                     <div>
+                        <span class="action-name">Hasil Panen & QR Code 🌾</span>
+                        <span class="action-sub">Catat panen & terbitkan QR Code blockchain</span>
+                    </div>
+                    <a href="{{ route('pemasok.harvests.index') }}" class="pill-link" style="background:#16a34a;">Buka</a>
+                </div>
+                <div class="action-item">
+                    <div>
                         <span class="action-name">Profil</span>
                         <span class="action-sub">Kelola data akun dan kontak</span>
                     </div>
